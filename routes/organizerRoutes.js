@@ -1,0 +1,20 @@
+const organizerController= require("../controller/organizerController")
+const express=require("express")
+const router_organizer=express.Router()
+const Auth =require( "../middleware/auth")
+
+
+//////////////////////////ORGANIZER ROUTES////////////////////////
+
+
+router_organizer.post('/register',organizerController.organizer_register)
+router_organizer.post('/login',organizerController.organizer_login)
+
+
+
+
+
+
+
+
+module.exports=router_organizer;
