@@ -16,10 +16,8 @@ router_user.post('/login',userController.loginUser)
 
 
 
-//////////////////////////ORGANIZER ROUTES////////////////////////
 
 
-router_user.post('/organizer_register',organizerController.organizer_register)
 
 
 

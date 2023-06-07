@@ -1,4 +1,5 @@
 const Organizer = require("../model/organizerModel");
+const Event=require('../model/event')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -31,9 +32,12 @@ const organizer_register = async (req, res) => {
         { expiresIn: "24hr" }
       );
 
+
+     
+
       console.log("yyeyye");
       res.status(200).json({
-        organizerData: req.body,
+        organizerData:organizerFind,
         message: "registered successfully..!",
         token,
         status: true,
@@ -47,7 +51,7 @@ const organizer_register = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: "24hr" }
       );
-      res.status(200).json({ google: true,token });
+      res.status(200).json({ google: true,token,organizerData:organizerFind });
     } else {
       res.json({ ready: "done" });
     }
@@ -106,7 +110,38 @@ const organizer_login = async (req, res) => {
 
 
 
+const addEvent=(req,res)=>{
+  try {
+    console.log("reached addEvent ");
+ 
+  
 
+    const event = JSON.parse(req.body.event);
+ 
+    event.image=req.files.image[0].filename
+
+    event.coverImage=req.files.coverImage[0].filename
+  
+   const location={
+    street:event.street,
+    city:event.city,
+    district:event.district,
+    state:event.state
+   }
+    console.log(event)
+  event.location=location
+    const newEvent= Event(event)
+    newEvent.save()
+     
+    console.log("hello")
+      
+    
+
+
+  } catch (error) {
+    
+  }
+}
 
 
 
@@ -115,6 +150,7 @@ const organizer_login = async (req, res) => {
 
 module.exports={
     organizer_register,
-    organizer_login
+    organizer_login,
+    addEvent
 
 }
