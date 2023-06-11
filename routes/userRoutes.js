@@ -9,10 +9,12 @@ const Auth =require( "../middleware/auth")
 
 router_user.post('/register',userController.registerUser)
 router_user.post('/login',userController.loginUser)
-
-
-
-
+router_user.get("/events",userController.listEvent)
+router_user.get("/userProfile",Auth,userController.userProfile)
+router_user.post('/sendMail',userController.sendMail)
+router_user.post('/resetPass',userController.resetPassword)
+router_user.post("/setNewPassword/:id",userController.resetPassword)
+router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
 
 
 

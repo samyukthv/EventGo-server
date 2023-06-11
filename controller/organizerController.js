@@ -33,8 +33,6 @@ const organizer_register = async (req, res) => {
       );
 
 
-     
-
       console.log("yyeyye");
       res.status(200).json({
         organizerData:organizerFind,
@@ -135,13 +133,17 @@ const addEvent=(req,res)=>{
      
     console.log("hello")
       
-    
+    res.status(200).json({success:true})
 
 
   } catch (error) {
-    
+    console.log(error.message);
+    return res.status(500).json({ error });
   }
 }
+
+
+
 
 
 

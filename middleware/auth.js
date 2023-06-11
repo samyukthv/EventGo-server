@@ -7,6 +7,7 @@ try {
     console.log("authorization header ");
     console.log(authHeader);
     if(!authHeader){
+        console.log("1")
         return res.status(200).send({
             message:"auth failed",
             status:false
@@ -14,24 +15,28 @@ try {
     }
   
      const token =authHeader.split(" ")[1]
+     console.log(token,1234);
      jwt.verify(
         token,process.env.JWT_SECRET,
         (err,decode)=>{
             if(err){
-                return res.send({
+                console.log("2");
+                return res.json({
                     message:"auth failed",
                     success:false
 
                 })
             }else{
+                console.log("3");
                 req.body.userId= decode.id
                 if(req.body.userId==null){
-                    return res.status(200).send({
+                    console.log("4")
+                    return res.status(200).json({
                         message: "You have no account, Please Login",
                         noAcc: true
                     })
                 }else{
-
+                     console.log("5")
                     next()
                 }
 
@@ -40,7 +45,7 @@ try {
      )
 
 } catch (error) {
-    return res.status(401).send({
+    return res.status(401).json({
         message: "auth failed",
         success: false,
     });
