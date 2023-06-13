@@ -18,10 +18,8 @@ const EventSchema =new mongoose.Schema({
     about:{
         type:String
     },
-    duration:{
-        type:String
-    },
-    StartDate:{
+   
+    startDate:{
         type:Date
     },
     endDate:{
@@ -41,7 +39,17 @@ const EventSchema =new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Organizer",
         required:true
+    },
+    startTime:{
+        type:String
+    },
+    endTime:{
+        type:String
+    },
+    description:{
+        type:String
     }
+
 
 
     

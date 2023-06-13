@@ -15,9 +15,9 @@ router_user.post('/sendMail',userController.sendMail)
 router_user.post('/resetPass',userController.resetPassword)
 router_user.post("/setNewPassword/:id",userController.resetPassword)
 router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
+router_user.post('/updateProfile', userController.updateProfile)
 
-
-
+router_user.get("/eventDetails/:id",userController.eventDetails)
 
 
 

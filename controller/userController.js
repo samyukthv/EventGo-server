@@ -29,20 +29,23 @@ const registerUser = async (req, res) => {
         email: req.body.email,
         password: password,
         mobile: req.body.mobile,
-      });
-      const token = jwt.sign(
-        { id: userdata._id, email: userdata.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "24hr" }
-      );
+      }).then((response)=>{
 
-      console.log("yyeyye");
-      res.status(200).json({
-        userData: req.body,
-        message: "registered successfully..!",
-        token,
-        status: true,
-      });
+        const token = jwt.sign(
+          { id: response._id, email: response.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "24hr" }
+        );
+
+        console.log("yyeyye");
+        res.status(200).json({
+          userData: response,
+          message: "registered successfully..!",
+          token,
+          status: true,
+        });
+      })
+
     } else if (req.body.image) {
       userdata.password = await bcrypt.hash(userdata.password, 10);
       const newUser = new User(userdata);
@@ -119,7 +122,7 @@ const loginUser = async (req, res) => {
 const listEvent= async(req,res)=>{
 try {
   console.log("list events");
-  const events= await Event.find({})
+  const events= await Event.find({}).limit(4)
   console.log(events);
   res.json({success:true,events})
 } catch (error) {
@@ -201,7 +204,9 @@ const resetPassword = async (req, res) => {
 
 const getOrganizerDetails= async(req,res)=>{
   try {
-    const organizerFind= await Organizer.find({})
+    console.log("weweweweewwewewewew");
+    const organizerFind= await Organizer.find({}).limit(4)
+    console.log(organizerFind,122222);
     res.status(200).json({organizerFind,success:true})
   } catch (error) {
     console.log("Error:", error);
@@ -209,8 +214,36 @@ const getOrganizerDetails= async(req,res)=>{
   }
 }
 
+const updateProfile=async(req,res)=>{
+  try {
+    console.log(req.body);
+    const updated= await User.updateOne({email:req.body.email},{$set:{
+      firstName:req.body.firstName,
+      lastName:req.body.lastName,
+      mobile:req.body.mobile
+    }})
+    res.status(200).json({updated:true})
+  } catch (error) {
+    
+  }
+}
 
 
+
+
+const eventDetails =async(req,res)=>{
+  try {
+    console.log('blasss')
+    console.log("event details");
+   const {id}=(req.params)
+   const eventDetails= await Event.findOne({_id:id}).populate('eventOrganizer')
+  console.log(eventDetails)
+   res.status(200).json({eventDetails})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" }); 
+  }
+}
 
 module.exports = {
   registerUser,
@@ -219,5 +252,7 @@ module.exports = {
   userProfile,
   sendMail,
   resetPassword,
-  getOrganizerDetails
+  getOrganizerDetails,
+  updateProfile,
+  eventDetails
 };

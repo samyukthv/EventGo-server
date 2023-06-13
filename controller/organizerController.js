@@ -10,6 +10,7 @@ const organizer_register = async (req, res) => {
     console.log(req.body);
     const organizerData = req.body;
     console.log(organizerData.email);
+    console.log(organizerData);
     const organizerFind = await Organizer.findOne({ email: organizerData.email });
     if (organizerFind) {
       console.log("if");
@@ -25,31 +26,40 @@ const organizer_register = async (req, res) => {
         email: req.body.email,
         password: password,
         mobile: req.body.mobile,
-      });
-      const token = jwt.sign(
-        { id: organizerData._id, email: organizerData.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "24hr" }
-      );
+      }).then((response)=>{
+
+        const token = jwt.sign(
+          { id: response._id, email: response.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "24hr" }
+        );
 
 
-      console.log("yyeyye");
-      res.status(200).json({
-        organizerData:organizerFind,
-        message: "registered successfully..!",
-        token,
-        status: true,
-      });
+        console.log("yyeyye");
+        res.status(200).json({
+          organizerData:response,
+          message: "registered successfully..!",
+          token,
+          status: true,
+        });
+
+      })
+
+
     } else if (req.body.image) {
       organizerData.password = await bcrypt.hash(organizerData.password, 10);
       const newOrganizer = new Organizer(organizerData);
-      newOrganizer.save();
-      const token = jwt.sign(
-        { id: organizerData._id, email: organizerData.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "24hr" }
-      );
-      res.status(200).json({ google: true,token,organizerData:organizerFind });
+      newOrganizer.save().then((response)=>{
+          console.log(response,123);
+        const token = jwt.sign(
+          { id: response._id, email: response.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "24hr" }
+        );
+
+        res.status(200).json({ google: true,token,organizerData:response });
+
+      })
     } else {
       res.json({ ready: "done" });
     }
