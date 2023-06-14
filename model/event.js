@@ -12,6 +12,9 @@ const EventSchema =new mongoose.Schema({
         city:{type:String},
         district:{type:String},
         state:{type:String},
+        latitude:{type:Number},
+        longitude:{type:Number},
+        
        }
     ],
 
@@ -48,6 +51,13 @@ const EventSchema =new mongoose.Schema({
     },
     description:{
         type:String
+    },
+    ticketQuantity:{
+        type:Number
+    },
+    ticketPrice:{
+        type:Number
+
     }
 
 

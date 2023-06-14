@@ -134,7 +134,9 @@ const addEvent=(req,res)=>{
     street:event.street,
     city:event.city,
     district:event.district,
-    state:event.state
+    state:event.state,
+    latitude:event.latitude,
+    longitude:event.longitude
    }
     console.log(event)
   event.location=location
