@@ -222,7 +222,10 @@ const updateProfile=async(req,res)=>{
       lastName:req.body.lastName,
       mobile:req.body.mobile
     }})
-    res.status(200).json({updated:true})
+
+    const user = await User.findOne({email:req.body.email})
+    console.log(user);
+    res.status(200).json({updated:true,user})
   } catch (error) {
     
   }
@@ -245,6 +248,23 @@ const eventDetails =async(req,res)=>{
   }
 }
 
+
+
+const organizerDetails=async(req,res)=>{
+  try {
+    const{id}=(req.params)
+    const organizerDetails=await Organizer.findOne({_id:id})
+    console.log(organizerDetails);
+    res.status(200).json({organizerDetails})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" }); 
+  }
+}
+
+
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -254,5 +274,6 @@ module.exports = {
   resetPassword,
   getOrganizerDetails,
   updateProfile,
-  eventDetails
+  eventDetails,
+  organizerDetails
 };

@@ -25,6 +25,18 @@ const organizerSchema= new mongoose.Schema({
     image:{
         type:String,
         
+    },
+    about:{
+        type:String,
+    },
+    instagram:{
+        type:String
+    },
+    linkedin:{
+        type:String
+    },
+    facebook:{
+        type:String
     }
  
 

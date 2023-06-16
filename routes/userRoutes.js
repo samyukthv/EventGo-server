@@ -18,6 +18,7 @@ router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
 router_user.post('/updateProfile', userController.updateProfile)
 
 router_user.get("/eventDetails/:id",userController.eventDetails)
+router_user.get('/organizerDetails/:id',userController.organizerDetails)
 
 
 

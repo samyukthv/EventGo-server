@@ -158,13 +158,51 @@ const addEvent=(req,res)=>{
 
 
 
+const updateProfile=async(req,res)=>{
+  try {
+    console.log(req.body);
+    const updated= await Organizer.updateOne({email:req.body.email},{$set:{
+      firstName:req.body.firstName,
+      lastName:req.body.lastName,
+      mobile:req.body.mobile,
+      about:req.body.about,
+      instagram:req.body.instagram,
+      facebook:req.body.facebook,
+      linkedin:req.body.linkedin
+    }})
 
+    const organizer = await Organizer.findOne({email:req.body.email})
+    console.log(organizer);
+    res.status(200).json({updated:true,organizer})
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
+
+
+
+const organizerEvents= async(req,res)=>{
+  try {
+   const {organizerId}=req.query
+   console.log("//////////////////////");
+   console.log(organizerId);
+   const events= await Event.find({eventOrganizer:organizerId})
+   console.log(events);
+  res.status(200).json({events})
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
 
 
 
 module.exports={
     organizer_register,
     organizer_login,
-    addEvent
+    addEvent,
+    updateProfile,
+    organizerEvents
 
 }
