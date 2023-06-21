@@ -4,7 +4,6 @@ const express=require("express")
 const router_user=express.Router()
 const Auth =require( "../middleware/auth")
 
-
 ////////////////////////////USER ROUTERS//////////////////////////
 
 router_user.post('/register',userController.registerUser)
@@ -21,9 +20,11 @@ router_user.get("/eventDetails/:id",userController.eventDetails)
 router_user.get('/organizerDetails/:id',userController.organizerDetails)
 
 
+router_user.get("/config", userController.config); 
+router_user.post("/create-payment-intent",userController.createPayment);
 
 
-
-
+router_user.post('/confirmBooking',Auth,userController.confirmBooking)
+router_user.get("/getBillingDetails",userController.getBillingDetails)
 
 module.exports=router_user;

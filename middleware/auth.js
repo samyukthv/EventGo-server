@@ -8,7 +8,7 @@ try {
     console.log(authHeader);
     if(!authHeader){
         console.log("1")
-        return res.status(200).send({
+        return res.status(401).send({
             message:"auth failed",
             status:false
         })
@@ -20,8 +20,8 @@ try {
         token,process.env.JWT_SECRET,
         (err,decode)=>{
             if(err){
-                console.log("2");
-                return res.json({
+                console.log("the token is not the same");
+                return res.status(401).json({
                     message:"auth failed",
                     success:false
 

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const { events } = require('./organizerModel')
 
 
 const EventSchema =new mongoose.Schema({
@@ -12,9 +11,7 @@ const EventSchema =new mongoose.Schema({
         city:{type:String},
         district:{type:String},
         state:{type:String},
-        latitude:{type:Number},
-        longitude:{type:Number},
-        
+        country:{type:String}
        }
     ],
 

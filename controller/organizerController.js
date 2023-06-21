@@ -94,7 +94,7 @@ const organizer_login = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: "24hr" }
           );
-          console.log(token);
+          console.log(token,212121);
           res
             .status(200)
             .json({
@@ -121,11 +121,11 @@ const organizer_login = async (req, res) => {
 const addEvent=(req,res)=>{
   try {
     console.log("reached addEvent ");
- 
+    
   
 
     const event = JSON.parse(req.body.event);
- 
+    console.log(event);
     event.image=req.files.image[0].filename
 
     event.coverImage=req.files.coverImage[0].filename
@@ -133,10 +133,10 @@ const addEvent=(req,res)=>{
    const location={
     street:event.street,
     city:event.city,
-    district:event.district,
     state:event.state,
-    latitude:event.latitude,
-    longitude:event.longitude
+    country:event.country,
+
+ 
    }
     console.log(event)
   event.location=location
