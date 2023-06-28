@@ -3,6 +3,7 @@ const organizerController=require('../controller/organizerController')
 const express=require("express")
 const router_user=express.Router()
 const Auth =require( "../middleware/auth")
+const upload = require('../middleware/multer')
 
 ////////////////////////////USER ROUTERS//////////////////////////
 
@@ -14,7 +15,8 @@ router_user.post('/sendMail',userController.sendMail)
 router_user.post('/resetPass',userController.resetPassword)
 router_user.post("/setNewPassword/:id",userController.resetPassword)
 router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
-router_user.post('/updateProfile', userController.updateProfile)
+router_user.patch('/updateProfile', userController.updateProfile)
+router_user.patch("/userImageUpdate",upload.single('profileImage'),userController.userImageUpdate)
 
 router_user.get("/eventDetails/:id",userController.eventDetails)
 router_user.get('/organizerDetails/:id',userController.organizerDetails)

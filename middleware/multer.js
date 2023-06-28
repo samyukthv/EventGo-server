@@ -14,7 +14,9 @@ const storage = multer.diskStorage({
         destinationFolder = path.join(__dirname,'../public/coverImage');
       } else if (file.fieldname === 'image') {
         destinationFolder = path.join(__dirname,'../public/image');
-      } else {
+      } else if(file.fieldname === 'profileImage') {
+        destinationFolder = path.join(__dirname,'../public/profileImage');
+      }else{
         return cb(new Error('Invalid image type'));
       }
   
