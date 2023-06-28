@@ -19,6 +19,8 @@ module.exports = async (email, subject, text) => {
             subject: subject,
             text: text
         })
+        console.log(email,12);
+        console.log("hygh");
         console.log(info.messageId)
     } catch (error) {
         console.log("something went wrong")

@@ -37,7 +37,17 @@ const organizerSchema= new mongoose.Schema({
     },
     facebook:{
         type:String
-    }
+    },
+    coverImage:{
+        type:String
+    },
+    post:[
+        {
+            title:String,
+            description:String,
+            image:String,
+        }
+    ],
  
 
 })

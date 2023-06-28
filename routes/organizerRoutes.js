@@ -12,8 +12,12 @@ router_organizer.post('/register',organizerController.organizer_register)
 router_organizer.post('/login',organizerController.organizer_login)
 router_organizer.post('/add-event', upload.fields([{name:'coverImage',maxCount:1},{name:'image',maxCount:1}]),organizerController.addEvent)
 router_organizer.post('/updateProfile', organizerController.updateProfile)
-router_organizer.get('/organizerEvents',organizerController.organizerEvents)
+router_organizer.patch("/organizerCoverImageUpdate",upload.single('organizerCoverImage'),organizerController.organizerCoverImageUpload)
+router_organizer.patch("/organizerImageUpdate",upload.single('organizerProfileImage'),organizerController.organizerImageUpdate)
+router_organizer.post("/organizerAddPost",upload.single('postImage'),organizerController.organizerAddPost)
 
+router_organizer.get('/organizerEvents',organizerController.organizerEvents)
+router_organizer.get("/organizerPosts",organizerController.organizerPosts)
 
 
 
