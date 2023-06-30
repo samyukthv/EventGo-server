@@ -29,4 +29,12 @@ router_user.post("/create-payment-intent",userController.createPayment);
 router_user.post('/confirmBooking',Auth,userController.confirmBooking)
 router_user.get("/getBillingDetails",userController.getBillingDetails)
 
+// to check weather the user is following the organizer
+router_user.get("/isFollowingOrganizer",userController.isFollowingOrganizer)
+router_user.post("/followOrganizer",userController.followOrganizer)
+router_user.post("/unFollowOrganizer",userController.unFollowOrganizer)
+
+router_user.get("/organizerEvent",userController.organizerEvent)
+router_user.get("/organizerPosts",userController.organizerPosts)
+
 module.exports=router_user;

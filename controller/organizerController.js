@@ -1,7 +1,10 @@
 const Organizer = require("../model/organizerModel");
 const Event = require("../model/event");
+const Booking=require("../model/booking")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
 
 const organizer_register = async (req, res) => {
   try {
@@ -241,7 +244,6 @@ const organizerPosts = async (req, res) => {
   try {
     const { organizerId } = req.query;
     const organizerPosts = await Organizer.findOne({ _id: organizerId }).select('post');
-    console.log(organizerPosts);
     res.status(200).json({organizerPosts})
 
   } catch (error) {
@@ -251,6 +253,65 @@ const organizerPosts = async (req, res) => {
     return res.status(500).json({ error });
   }
 };
+
+
+const eventDetails=async(req,res)=>{
+  try {
+    const {eventId}= req.query
+    const details=await Event.findById({_id:eventId})
+    const street = details?.location[0].street;
+    const city = details.location[0].city;
+    const state = details.location[0].state;
+    const country = details.location[0].country;
+    const placeName = `${street}, ${city}, ${state}, ${country}`;
+    res.json({details,success:true,placeName})
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
+
+const chartdetails=async(req,res)=>{
+  try {
+   const {eventId}=req.query
+   const ticketQuantityPerDay = await Booking.aggregate([
+    { $match: { event:new mongoose.Types.ObjectId(eventId) } }, // Match bookings with the specified event ID
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$bookedDate" } }, // Group by the bookedDate field formatted as YYYY-MM-DD
+        totalTicketQuantity: { $sum: "$ticketQuantity" }, // Calculate the sum of ticketQuantity per day
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by date in ascending order
+  ]);
+ const date = ticketQuantityPerDay.map(entry=>entry._id)
+ const count = ticketQuantityPerDay.map(entry=>entry.totalTicketQuantity)
+
+res.json({date,count})
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
+
+
+const tableDetails=async(req,res)=>{
+  try {
+    const {eventId}=req.query
+    console.log(eventId);
+const event =await Event.findOne({_id:eventId})
+
+
+    const userDetails = await Booking.find({event:eventId}).populate("user")
+    console.log(userDetails);
+res.json({userDetails})
+  
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
+
 
 module.exports = {
   organizer_register,
@@ -262,4 +323,7 @@ module.exports = {
   organizerImageUpdate,
   organizerAddPost,
   organizerPosts,
+  eventDetails,
+  chartdetails,
+  tableDetails
 };

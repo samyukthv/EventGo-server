@@ -48,7 +48,10 @@ const organizerSchema= new mongoose.Schema({
             image:String,
         }
     ],
- 
+    followers:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+      }]
 
 })
 

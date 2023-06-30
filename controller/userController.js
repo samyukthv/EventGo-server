@@ -129,6 +129,7 @@ const listEvent = async (req, res) => {
 
 const userProfile = async (req, res) => {
   try {
+    console.log( req.body.userId,89);
     const find = await User.findOne({ _id: req.body.userId });
     if (!find) {
       res.json({ user: false, message: "unauthenticated user" });
@@ -174,7 +175,6 @@ const resetPassword = async (req, res) => {
     const user = await User.findOne({ _id: userId });
     if (user) {
       const passwordMatch = await bcrypt.compare(password, user.password);
-      console.log("passwordMatch:", passwordMatch);
       if (passwordMatch) {
         console.log("iff");
         res.json({
@@ -183,8 +183,7 @@ const resetPassword = async (req, res) => {
         });
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("hashedPassword:", hashedPassword);
-        console.log("Updating password...");
+       
         await User.updateOne(
           { _id: userId },
           { $set: { password: hashedPassword } }
@@ -194,7 +193,6 @@ const resetPassword = async (req, res) => {
           .json({ updated: true, message: "Password updated successfully" });
       }
     } else {
-      console.log("User not found");
       res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
@@ -205,9 +203,7 @@ const resetPassword = async (req, res) => {
 
 const getOrganizerDetails = async (req, res) => {
   try {
-    console.log("weweweweewwewewewew");
     const organizerFind = await Organizer.find({}).limit(4);
-    console.log(organizerFind, 122222);
     res.status(200).json({ organizerFind, success: true });
   } catch (error) {
     console.log("Error:", error);
@@ -217,7 +213,6 @@ const getOrganizerDetails = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    console.log(req.body);
     const updated = await User.updateOne(
       { email: req.body.email },
       {
@@ -252,7 +247,6 @@ const userImageUpdate = async(req,res)=>{
 
 const eventDetails = async (req, res) => {
   try {
-    console.log("blasss");
     const { id } = req.params;
     const eventDetails = await Event.findOne({ _id: id }).populate(
       "eventOrganizer"
@@ -287,9 +281,7 @@ const organizerDetails = async (req, res) => {
 
 const config = async (req, res) => {
   try {
-    console.log("config");
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
-    console.log(publishableKey, 123);
     res.json({
       publishableKey: publishableKey,
     });
@@ -337,6 +329,11 @@ const confirmBooking = async (req, res) => {
     };
     const newBooking = new Booking(booking);
     newBooking.save();
+    
+    await Event.updateOne(
+      { _id: req.body.eventId },
+      { $inc: { ticketQuantity: -req.body.ticketQuantity } }
+    );
   } catch (error) {
     return res.status(400).json({
       error: {
@@ -349,25 +346,91 @@ const confirmBooking = async (req, res) => {
 
 const getBillingDetails=async(req,res)=>{
   try {
-    console.log("get billing details");
     const latestBooking = await Booking.findOne({})
     .sort({ bookedDate: -1 })
     .populate('user')
     .populate('event');
 
-    console.log(latestBooking.event.location[0],12);
     
     const street = latestBooking?.event.location[0].street;
     const city = latestBooking?.event.location[0].city;
     const state = latestBooking?.event.location[0].state;
     const country = latestBooking?.event.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
-    console.log(placeName,90);
     res.json({latestBooking,success:true,placeName})
   } catch (error) {
     
   }
 }
+
+
+// to check if the user is following the organizer
+
+const isFollowingOrganizer = async(req,res)=>{
+  try {
+    const {organizerId}=req.query
+    const {userId}=req.query
+    const organizerFind =await User.findOne({_id:userId,following:organizerId},{})
+    if(organizerFind===null){
+      res.json({organizer:false})
+    }else{
+      res.json({organizer:true})
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+
+
+const followOrganizer= async(req,res)=>{
+  try {    const {userId}=req.body
+    const {organizerId}=req.body
+    const follow= await User.findOneAndUpdate({_id:userId},{$push:{following:organizerId}})
+    const organizer= await Organizer.findOneAndUpdate({_id:organizerId},{$push:{followers:userId}})
+
+    res.json({followed:true})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+const unFollowOrganizer= async(req,res)=>{
+  try {
+    const {userId}=req.body
+    const {organizerId}=req.body
+    const unFollow= await User.findOneAndUpdate({_id:userId},{$pull:{following:organizerId}})
+    const organizer= await Organizer.findOneAndUpdate({_id:organizerId},{$pull:{followers:userId}})
+    res.json({unFollowed:true})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+
+
+const organizerEvent= async(req,res)=>{
+  try {
+    const {organizerId}= req.query
+    const eventDetails= await Event.find({ eventOrganizer: organizerId });
+    res.json({eventDetails})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+const organizerPosts= async(req,res)=>{
+  try {
+    const {organizerId}= req.query
+    const resp=await Organizer.findOne({_id:organizerId})
+  const postDetails=resp.post
+    res.json({postDetails})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+
 
 
 
@@ -386,5 +449,10 @@ module.exports = {
   createPayment,
   confirmBooking,
   getBillingDetails,
-  userImageUpdate
+  userImageUpdate,
+  isFollowingOrganizer,
+  followOrganizer,
+  unFollowOrganizer,
+  organizerEvent,
+  organizerPosts
 };

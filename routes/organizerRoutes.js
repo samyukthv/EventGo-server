@@ -20,6 +20,9 @@ router_organizer.get('/organizerEvents',organizerController.organizerEvents)
 router_organizer.get("/organizerPosts",organizerController.organizerPosts)
 
 
+router_organizer.get("/eventDetails",organizerController.eventDetails)
+router_organizer.get('/chartdetails',organizerController.chartdetails)
+router_organizer.get('/tableDetails',organizerController.tableDetails)
 
 
 
