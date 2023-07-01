@@ -37,4 +37,8 @@ router_user.post("/unFollowOrganizer",userController.unFollowOrganizer)
 router_user.get("/organizerEvent",userController.organizerEvent)
 router_user.get("/organizerPosts",userController.organizerPosts)
 
+
+router_user.get("/personalChoice",userController.personalChoice)
+router_user.get("/allEvents",userController.allEvents)
+
 module.exports=router_user;

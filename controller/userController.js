@@ -18,7 +18,6 @@ const registerUser = async (req, res) => {
   try {
  
     const userdata = req.body;
-    console.log(userdata.email);
     const userFind = await User.findOne({ email: userdata.email });
     if (userFind) {
       console.log("if");
@@ -77,17 +76,14 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    console.log("loginnnnnn");
     const userDetails = req.body;
-    console.log(userDetails);
 
     let user = await User.findOne({ email: userDetails.email });
 
     if (user) {
       bcrypt.compare(userDetails.password, user.password).then((data) => {
         if (data) {
-          console.log("one");
-          console.log("compareddd");
+    
           const token = jwt.sign(
             { id: user._id, email: user.email },
             process.env.JWT_SECRET,
@@ -117,9 +113,7 @@ const loginUser = async (req, res) => {
 
 const listEvent = async (req, res) => {
   try {
-    console.log("list events");
     const events = await Event.find({}).limit(4);
-    console.log(events);
     res.json({ success: true, events });
   } catch (error) {
     console.log(error.message);
@@ -129,7 +123,6 @@ const listEvent = async (req, res) => {
 
 const userProfile = async (req, res) => {
   try {
-    console.log( req.body.userId,89);
     const find = await User.findOne({ _id: req.body.userId });
     if (!find) {
       res.json({ user: false, message: "unauthenticated user" });
@@ -144,7 +137,6 @@ const userProfile = async (req, res) => {
 
 const sendMail = async (req, res) => {
   try {
-    console.log(req.body.email);
     const email = req.body.email;
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -257,7 +249,6 @@ const eventDetails = async (req, res) => {
         const state = eventDetails.location[0].state;
         const country = eventDetails.location[0].country;
         const placeName = `${street}, ${city}, ${state}, ${country}`;
-        console.log(placeName);
     res.status(200).json({ eventDetails ,placeName });
   } catch (error) {
     console.log("Error:", error);
@@ -432,7 +423,37 @@ const organizerPosts= async(req,res)=>{
 }
 
 
+const personalChoice=async(req,res)=>{
+  try {
+    console.log("hyrrrrrrr");
+    const{userId}=req.query
+    const user = await User.findOne({_id:userId}).populate('following');
+    const organizers = user.following;
+    console.log(organizers,9999);
+    const personal = await Event.find({ eventOrganizer: { $in: organizers } }).limit(4);
 
+    console.log(personal);
+    res.json({personal})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
+
+
+
+const allEvents = async(req,res)=>{
+  try {
+    console.log("hyy");
+    const events=await Event.find({})
+    const city =await Event.distinct('location.city')
+    console.log(city);
+    res.json({events,city})
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+}
 
 module.exports = {
   registerUser,
@@ -454,5 +475,7 @@ module.exports = {
   followOrganizer,
   unFollowOrganizer,
   organizerEvent,
-  organizerPosts
+  organizerPosts,
+  personalChoice,
+  allEvents
 };

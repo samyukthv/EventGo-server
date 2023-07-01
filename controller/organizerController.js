@@ -129,6 +129,7 @@ const addEvent = (req, res) => {
     };
     console.log(event);
     event.location = location;
+    event.addedOn =new Date()
     const newEvent = Event(event);
     newEvent.save();
 

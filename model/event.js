@@ -55,6 +55,9 @@ const EventSchema =new mongoose.Schema({
     ticketPrice:{
         type:Number
 
+    },
+    addedOn:{
+        type:Date
     }
 
 
