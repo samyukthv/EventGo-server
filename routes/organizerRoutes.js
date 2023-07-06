@@ -1,4 +1,6 @@
 const organizerController= require("../controller/organizerController")
+const userController= require("../controller/userController")
+
 const express=require("express")
 const router_organizer=express.Router()
 const Auth =require( "../middleware/auth")
@@ -24,6 +26,9 @@ router_organizer.get("/eventDetails",organizerController.eventDetails)
 router_organizer.get('/chartdetails',organizerController.chartdetails)
 router_organizer.get('/tableDetails',organizerController.tableDetails)
 
+router_organizer.get("/getAllContacts",organizerController.getAllContacts)
+router_organizer.get("/getAllMessages",userController.getAllMessages)
+router_organizer.post("/addMessage",userController.addMessage)
 
 
 module.exports=router_organizer;

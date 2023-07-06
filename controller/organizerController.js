@@ -1,10 +1,12 @@
 const Organizer = require("../model/organizerModel");
 const Event = require("../model/event");
-const Booking=require("../model/booking")
+const Booking = require("../model/booking");
+const Chat = require("../model/chat");
+const User = require("../model/userModel");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-
 
 const organizer_register = async (req, res) => {
   try {
@@ -129,7 +131,7 @@ const addEvent = (req, res) => {
     };
     console.log(event);
     event.location = location;
-    event.addedOn =new Date()
+    event.addedOn = new Date();
     const newEvent = Event(event);
     newEvent.save();
 
@@ -221,7 +223,7 @@ const organizerAddPost = async (req, res) => {
     const value = JSON.parse(req.body.value);
     const id = JSON.parse(req.body.id);
     const newImage = req.file.filename;
-    
+
     await Organizer.updateOne(
       { _id: id },
       {
@@ -234,7 +236,7 @@ const organizerAddPost = async (req, res) => {
         },
       }
     );
-    res.status(200).json({success:true})
+    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
@@ -244,75 +246,88 @@ const organizerAddPost = async (req, res) => {
 const organizerPosts = async (req, res) => {
   try {
     const { organizerId } = req.query;
-    const organizerPosts = await Organizer.findOne({ _id: organizerId }).select('post');
-    res.status(200).json({organizerPosts})
-
+    const organizerPosts = await Organizer.findOne({ _id: organizerId }).select(
+      "post"
+    );
+    res.status(200).json({ organizerPosts });
   } catch (error) {
-
     console.log(error.message);
 
     return res.status(500).json({ error });
   }
 };
 
-
-const eventDetails=async(req,res)=>{
+const eventDetails = async (req, res) => {
   try {
-    const {eventId}= req.query
-    const details=await Event.findById({_id:eventId})
+    const { eventId } = req.query;
+    const details = await Event.findById({ _id: eventId });
     const street = details?.location[0].street;
     const city = details.location[0].city;
     const state = details.location[0].state;
     const country = details.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
-    res.json({details,success:true,placeName})
+    res.json({ details, success: true, placeName });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
   }
-}
+};
 
-const chartdetails=async(req,res)=>{
+const chartdetails = async (req, res) => {
   try {
-   const {eventId}=req.query
-   const ticketQuantityPerDay = await Booking.aggregate([
-    { $match: { event:new mongoose.Types.ObjectId(eventId) } }, // Match bookings with the specified event ID
-    {
-      $group: {
-        _id: { $dateToString: { format: "%Y-%m-%d", date: "$bookedDate" } }, // Group by the bookedDate field formatted as YYYY-MM-DD
-        totalTicketQuantity: { $sum: "$ticketQuantity" }, // Calculate the sum of ticketQuantity per day
+    const { eventId } = req.query;
+    const ticketQuantityPerDay = await Booking.aggregate([
+      { $match: { event: new mongoose.Types.ObjectId(eventId) } }, // Match bookings with the specified event ID
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$bookedDate" } }, // Group by the bookedDate field formatted as YYYY-MM-DD
+          totalTicketQuantity: { $sum: "$ticketQuantity" }, // Calculate the sum of ticketQuantity per day
+        },
       },
-    },
-    { $sort: { _id: 1 } }, // Sort the results by date in ascending order
-  ]);
- const date = ticketQuantityPerDay.map(entry=>entry._id)
- const count = ticketQuantityPerDay.map(entry=>entry.totalTicketQuantity)
+      { $sort: { _id: 1 } }, // Sort the results by date in ascending order
+    ]);
+    const date = ticketQuantityPerDay.map((entry) => entry._id);
+    const count = ticketQuantityPerDay.map(
+      (entry) => entry.totalTicketQuantity
+    );
 
-res.json({date,count})
+    res.json({ date, count });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
   }
-}
+};
 
-
-const tableDetails=async(req,res)=>{
+const tableDetails = async (req, res) => {
   try {
-    const {eventId}=req.query
+    const { eventId } = req.query;
     console.log(eventId);
-const event =await Event.findOne({_id:eventId})
+    const event = await Event.findOne({ _id: eventId });
 
-
-    const userDetails = await Booking.find({event:eventId}).populate("user")
+    const userDetails = await Booking.find({ event: eventId }).populate("user");
     console.log(userDetails);
-res.json({userDetails})
-  
+    res.json({ userDetails });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
   }
-}
+};
 
+const getAllContacts = async (req, res) => {
+  try {
+    const { organizerId } = req.query;
+    Chat.distinct("sender").then((res) => {
+      senderIds = res
+        .map((sender) => sender.toString())
+        .filter((x) => x !== organizerId);
+    });
+    User.find({ _id: { $in: senderIds } }, { firstName: 1, image: 1 }).then(
+      (users) => {
+        res.status(200).json({ success: true, users });
+      }
+    );
+  } catch (error) {}
+};
 
 module.exports = {
   organizer_register,
@@ -326,5 +341,6 @@ module.exports = {
   organizerPosts,
   eventDetails,
   chartdetails,
-  tableDetails
+  tableDetails,
+  getAllContacts,
 };

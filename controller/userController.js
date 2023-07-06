@@ -2,6 +2,7 @@ const User = require("../model/userModel");
 const Event = require("../model/event");
 const Booking = require("../model/booking");
 const Organizer = require("../model/organizerModel");
+const Chat=require("../model/chat")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendMail");
@@ -447,13 +448,93 @@ const allEvents = async(req,res)=>{
     console.log("hyy");
     const events=await Event.find({})
     const city =await Event.distinct('location.city')
-    console.log(city);
     res.json({events,city})
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
 }
+
+
+
+/// CHAT FUNCTIONS 
+
+const addMessage = async (req, res) => {
+  try {
+    const { from, to, msg } = req.body;
+    const data = await Chat.create({
+      message: { text: msg },
+      users: [from, to],
+      sender: from,
+    });
+    if (data) {
+      return res.json({ msg: "Message added successfully" });
+    }
+    return res.json({ msg: "Failed to add message" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal server error" });
+  }
+};
+
+
+
+const getAllMessages = async(req,res)=>{
+  try {
+    const { to,from } = req.query
+
+
+    const messages = await Chat.find({
+      users: {
+        $all: [from, to]
+      },
+    }).sort({ updatedAt: 1 });
+      const formattedMessages = messages.map((msg) => {
+      const now = new Date();
+      const timeAgo = Math.floor((now - new Date(msg.updatedAt)) / 60000); // Calculate time difference in minutes
+
+      let timeString;
+      if (timeAgo <= 0) {
+        timeString = 'just now';
+      } else if (timeAgo === 1) {
+        timeString = '1 minute ago';
+      } else if (timeAgo < 60) {
+        timeString = `${timeAgo} minutes ago`;
+      } else if (timeAgo < 1440) {
+        const updatedTime = new Date(msg.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        timeString = updatedTime.includes(':') ? updatedTime.replace(' ', '') : updatedTime;
+      } else {
+        const updatedTime = new Date(msg.updatedAt).toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        timeString = updatedTime.includes(',') ? updatedTime.replace(',', '') : updatedTime;
+      }
+
+      return {
+        fromSelf: msg.sender.toString() === from,
+        message: msg.message.text,
+        time: timeString,
+      };
+    });
+
+    res.status(200).json({ messages: formattedMessages });
+  } catch (e) {
+    console.log(e.message);
+  }
+}
+
+const senderDetails = async(req,res)=>{
+  try {
+    const {senderId}=req.query
+    const senderDetails= await  Organizer.findOne({_id:senderId})
+    res.json({senderDetails})
+  } catch (error) {
+    
+  }
+}
+
+
+
+
+
 
 module.exports = {
   registerUser,
@@ -477,5 +558,8 @@ module.exports = {
   organizerEvent,
   organizerPosts,
   personalChoice,
-  allEvents
+  allEvents,
+  addMessage,
+  getAllMessages,
+  senderDetails
 };

@@ -41,4 +41,11 @@ router_user.get("/organizerPosts",userController.organizerPosts)
 router_user.get("/personalChoice",userController.personalChoice)
 router_user.get("/allEvents",userController.allEvents)
 
+
+router_user.get("/senderDetails",userController.senderDetails)
+// chat 
+
+router_user.post("/addMessage",userController.addMessage)
+router_user.get("/getAllMessages",userController.getAllMessages)
+
 module.exports=router_user;
