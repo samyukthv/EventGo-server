@@ -1,6 +1,25 @@
 const mongoose = require('mongoose')
 
 
+const ReviewSchema = new mongoose.Schema({
+    reviewerName: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'User',
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
+    date:{
+        type:Date
+    }
+  });
+
+
 const EventSchema =new mongoose.Schema({
     eventName:{
         type:String,
@@ -58,7 +77,8 @@ const EventSchema =new mongoose.Schema({
     },
     addedOn:{
         type:Date
-    }
+    },
+    reviews: [ReviewSchema],
 
 
 

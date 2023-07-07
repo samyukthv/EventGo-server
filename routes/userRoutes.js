@@ -47,5 +47,7 @@ router_user.get("/senderDetails",userController.senderDetails)
 
 router_user.post("/addMessage",userController.addMessage)
 router_user.get("/getAllMessages",userController.getAllMessages)
+router_user.post("/setReview",userController.submitReview)
+router_user.get("/allReview",userController.allReview)
 
 module.exports=router_user;

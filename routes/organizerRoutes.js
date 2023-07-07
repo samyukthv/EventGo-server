@@ -31,4 +31,6 @@ router_organizer.get("/getAllMessages",userController.getAllMessages)
 router_organizer.post("/addMessage",userController.addMessage)
 
 
+router_organizer.post("/editEvent",upload.fields([{name:'coverImage',maxCount:1},{name:'image',maxCount:1}]),organizerController.editEvent)
+
 module.exports=router_organizer;

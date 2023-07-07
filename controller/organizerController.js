@@ -7,6 +7,11 @@ const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path= require('path');
+
+
+
 
 const organizer_register = async (req, res) => {
   try {
@@ -259,6 +264,7 @@ const organizerPosts = async (req, res) => {
 
 const eventDetails = async (req, res) => {
   try {
+    console.log("helloooo");
     const { eventId } = req.query;
     const details = await Event.findById({ _id: eventId });
     const street = details?.location[0].street;
@@ -266,6 +272,10 @@ const eventDetails = async (req, res) => {
     const state = details.location[0].state;
     const country = details.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
+
+   
+ 
+
     res.json({ details, success: true, placeName });
   } catch (error) {
     console.log(error.message);
@@ -329,6 +339,54 @@ const getAllContacts = async (req, res) => {
   } catch (error) {}
 };
 
+
+
+const editEvent= async(req,res)=>{
+  try {
+    console.log("hellooooooooo");
+    const details=JSON.parse(req.body.event);
+
+    console.log(details,999);
+
+     
+    
+    
+    fs.unlink(path.join(__dirname,"../../server/public/image",details.image),(error)=>{
+      if(error){
+        console.log(error);
+      }else{
+        console.log("image unlinked");
+      }
+    })
+    
+    fs.unlink(path.join(__dirname,"../../server/public/coverImage",details.coverImage),(error)=>{
+      if(error){
+        console.log(error);
+      }else{
+        console.log("cover unlinked");
+      }
+    })
+
+    await Event.updateOne({_id:details._id},{$set:{
+        eventName:details.eventName,
+        about:details.about,
+        description:details.description,
+        ticketPrice:details.ticketPrice,
+        ticketQuantity:details.ticketQuantity,
+        startDate:details.startDate,
+        endDate:details.endDate,
+        endTime:details.endDate,
+        startTime:details.startTime,
+        image:details.image,
+        coverImage:details.coverImage,
+
+    }})
+
+  } catch (error) {
+    
+  }
+}
+
 module.exports = {
   organizer_register,
   organizer_login,
@@ -343,4 +401,5 @@ module.exports = {
   chartdetails,
   tableDetails,
   getAllContacts,
+  editEvent
 };

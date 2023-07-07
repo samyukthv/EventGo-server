@@ -2,7 +2,7 @@ const User = require("../model/userModel");
 const Event = require("../model/event");
 const Booking = require("../model/booking");
 const Organizer = require("../model/organizerModel");
-const Chat=require("../model/chat")
+const Chat = require("../model/chat");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendMail");
@@ -10,14 +10,13 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2022-08-01",
 });
 
-
-
+const { ObjectId } = require("mongodb");
+const booking = require("../model/booking");
 
 // user register
 
 const registerUser = async (req, res) => {
   try {
- 
     const userdata = req.body;
     const userFind = await User.findOne({ email: userdata.email });
     if (userFind) {
@@ -84,7 +83,6 @@ const loginUser = async (req, res) => {
     if (user) {
       bcrypt.compare(userDetails.password, user.password).then((data) => {
         if (data) {
-    
           const token = jwt.sign(
             { id: user._id, email: user.email },
             process.env.JWT_SECRET,
@@ -146,13 +144,11 @@ const sendMail = async (req, res) => {
 
     const url = `http://localhost:5173/reset-password/${user._id}`;
     await sendEmail(email, "change password link", url);
-    res
-      .status(200)
-      .json({
-        status: true,
-        message: "verification email send successfully",
-        verify: true,
-      });
+    res.status(200).json({
+      status: true,
+      message: "verification email send successfully",
+      verify: true,
+    });
   } catch (error) {
     console.log("error");
     console.log(error.message);
@@ -176,7 +172,7 @@ const resetPassword = async (req, res) => {
         });
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
-       
+
         await User.updateOne(
           { _id: userId },
           { $set: { password: hashedPassword } }
@@ -223,34 +219,39 @@ const updateProfile = async (req, res) => {
   } catch (error) {}
 };
 
-const userImageUpdate = async(req,res)=>{
+const userImageUpdate = async (req, res) => {
   try {
     const id = JSON.parse(req.body.id);
- 
-   const newImage=req.file.filename
-    const updated= await User.updateOne({_id:id},{$set:{image:newImage}})
-    const user = await User.findOne({_id:id})
-    res.status(200).json({user,success:true})
+
+    const newImage = req.file.filename;
+    const updated = await User.updateOne(
+      { _id: id },
+      { $set: { image: newImage } }
+    );
+    const user = await User.findOne({ _id: id });
+    res.status(200).json({ user, success: true });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
-
+};
 
 const eventDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const eventDetails = await Event.findOne({ _id: id }).populate(
       "eventOrganizer"
-    );
+    ).populate("reviews.reviewerName");
 
-     const street = eventDetails?.location[0].street;
-        const city = eventDetails.location[0].city;
-        const state = eventDetails.location[0].state;
-        const country = eventDetails.location[0].country;
-        const placeName = `${street}, ${city}, ${state}, ${country}`;
-    res.status(200).json({ eventDetails ,placeName });
+    const street = eventDetails?.location[0].street;
+    const city = eventDetails.location[0].city;
+    const state = eventDetails.location[0].state;
+    const country = eventDetails.location[0].country;
+    const placeName = `${street}, ${city}, ${state}, ${country}`;
+
+    const bookedUsers = await Booking.findOne({ event: id }, { user: 1 });
+
+    res.status(200).json({ eventDetails, placeName, bookedUsers });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -314,14 +315,14 @@ const confirmBooking = async (req, res) => {
       bookedDate: new Date(),
       totalBill: req.body.totalBill,
       ticketQuantity: req.body.ticketQuantity,
-      userFirstName:req.body.userFirstName,
-      userLastName:req.body.userLastName,
-      bookingEmail:req.body.bookingEmail,
-      bookingMobile:req.body.bookingMobile
+      userFirstName: req.body.userFirstName,
+      userLastName: req.body.userLastName,
+      bookingEmail: req.body.bookingEmail,
+      bookingMobile: req.body.bookingMobile,
     };
     const newBooking = new Booking(booking);
     newBooking.save();
-    
+
     await Event.updateOne(
       { _id: req.body.eventId },
       { $inc: { ticketQuantity: -req.body.ticketQuantity } }
@@ -331,133 +332,139 @@ const confirmBooking = async (req, res) => {
       error: {
         message: e.message,
       },
-    })
+    });
   }
 };
 
-
-const getBillingDetails=async(req,res)=>{
+const getBillingDetails = async (req, res) => {
   try {
     const latestBooking = await Booking.findOne({})
-    .sort({ bookedDate: -1 })
-    .populate('user')
-    .populate('event');
+      .sort({ bookedDate: -1 })
+      .populate("user")
+      .populate("event");
 
-    
     const street = latestBooking?.event.location[0].street;
     const city = latestBooking?.event.location[0].city;
     const state = latestBooking?.event.location[0].state;
     const country = latestBooking?.event.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
-    res.json({latestBooking,success:true,placeName})
-  } catch (error) {
-    
-  }
-}
-
+    res.json({ latestBooking, success: true, placeName });
+  } catch (error) {}
+};
 
 // to check if the user is following the organizer
 
-const isFollowingOrganizer = async(req,res)=>{
+const isFollowingOrganizer = async (req, res) => {
   try {
-    const {organizerId}=req.query
-    const {userId}=req.query
-    const organizerFind =await User.findOne({_id:userId,following:organizerId},{})
-    if(organizerFind===null){
-      res.json({organizer:false})
-    }else{
-      res.json({organizer:true})
+    const { organizerId } = req.query;
+    const { userId } = req.query;
+    const organizerFind = await User.findOne(
+      { _id: userId, following: organizerId },
+      {}
+    );
+    if (organizerFind === null) {
+      res.json({ organizer: false });
+    } else {
+      res.json({ organizer: true });
     }
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
+};
 
-
-const followOrganizer= async(req,res)=>{
-  try {    const {userId}=req.body
-    const {organizerId}=req.body
-    const follow= await User.findOneAndUpdate({_id:userId},{$push:{following:organizerId}})
-    const organizer= await Organizer.findOneAndUpdate({_id:organizerId},{$push:{followers:userId}})
-
-    res.json({followed:true})
-  } catch (error) {
-    console.log("Error:", error);
-    res.status(500).json({ message: "An error occurred" });
-  }
-}
-const unFollowOrganizer= async(req,res)=>{
+const followOrganizer = async (req, res) => {
   try {
-    const {userId}=req.body
-    const {organizerId}=req.body
-    const unFollow= await User.findOneAndUpdate({_id:userId},{$pull:{following:organizerId}})
-    const organizer= await Organizer.findOneAndUpdate({_id:organizerId},{$pull:{followers:userId}})
-    res.json({unFollowed:true})
+    const { userId } = req.body;
+    const { organizerId } = req.body;
+    const follow = await User.findOneAndUpdate(
+      { _id: userId },
+      { $push: { following: organizerId } }
+    );
+    const organizer = await Organizer.findOneAndUpdate(
+      { _id: organizerId },
+      { $push: { followers: userId } }
+    );
+
+    res.json({ followed: true });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
-
-
-const organizerEvent= async(req,res)=>{
+};
+const unFollowOrganizer = async (req, res) => {
   try {
-    const {organizerId}= req.query
-    const eventDetails= await Event.find({ eventOrganizer: organizerId });
-    res.json({eventDetails})
+    const { userId } = req.body;
+    const { organizerId } = req.body;
+    const unFollow = await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { following: organizerId } }
+    );
+    const organizer = await Organizer.findOneAndUpdate(
+      { _id: organizerId },
+      { $pull: { followers: userId } }
+    );
+    res.json({ unFollowed: true });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
-const organizerPosts= async(req,res)=>{
+};
+
+const organizerEvent = async (req, res) => {
   try {
-    const {organizerId}= req.query
-    const resp=await Organizer.findOne({_id:organizerId})
-  const postDetails=resp.post
-    res.json({postDetails})
+    const { organizerId } = req.query;
+    const eventDetails = await Event.find({ eventOrganizer: organizerId });
+    res.json({ eventDetails });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
+};
+const organizerPosts = async (req, res) => {
+  try {
+    const { organizerId } = req.query;
+    const resp = await Organizer.findOne({ _id: organizerId });
+    const postDetails = resp.post;
+    res.json({ postDetails });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
 
-
-const personalChoice=async(req,res)=>{
+const personalChoice = async (req, res) => {
   try {
     console.log("hyrrrrrrr");
-    const{userId}=req.query
-    const user = await User.findOne({_id:userId}).populate('following');
+    const { userId } = req.query;
+    const user = await User.findOne({ _id: userId }).populate("following");
     const organizers = user.following;
-    console.log(organizers,9999);
-    const personal = await Event.find({ eventOrganizer: { $in: organizers } }).limit(4);
+    console.log(organizers, 9999);
+    const personal = await Event.find({
+      eventOrganizer: { $in: organizers },
+    }).limit(4);
 
     console.log(personal);
-    res.json({personal})
+    res.json({ personal });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
+};
 
-
-
-const allEvents = async(req,res)=>{
+const allEvents = async (req, res) => {
   try {
     console.log("hyy");
-    const events=await Event.find({})
-    const city =await Event.distinct('location.city')
-    res.json({events,city})
+    const events = await Event.find({});
+    const city = await Event.distinct("location.city");
+    res.json({ events, city });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
   }
-}
+};
 
-
-
-/// CHAT FUNCTIONS 
+/// CHAT FUNCTIONS
 
 const addMessage = async (req, res) => {
   try {
@@ -477,35 +484,43 @@ const addMessage = async (req, res) => {
   }
 };
 
-
-
-const getAllMessages = async(req,res)=>{
+const getAllMessages = async (req, res) => {
   try {
-    const { to,from } = req.query
-
+    const { to, from } = req.query;
 
     const messages = await Chat.find({
       users: {
-        $all: [from, to]
+        $all: [from, to],
       },
     }).sort({ updatedAt: 1 });
-      const formattedMessages = messages.map((msg) => {
+    const formattedMessages = messages.map((msg) => {
       const now = new Date();
       const timeAgo = Math.floor((now - new Date(msg.updatedAt)) / 60000); // Calculate time difference in minutes
 
       let timeString;
       if (timeAgo <= 0) {
-        timeString = 'just now';
+        timeString = "just now";
       } else if (timeAgo === 1) {
-        timeString = '1 minute ago';
+        timeString = "1 minute ago";
       } else if (timeAgo < 60) {
         timeString = `${timeAgo} minutes ago`;
       } else if (timeAgo < 1440) {
-        const updatedTime = new Date(msg.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        timeString = updatedTime.includes(':') ? updatedTime.replace(' ', '') : updatedTime;
+        const updatedTime = new Date(msg.updatedAt).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+        timeString = updatedTime.includes(":")
+          ? updatedTime.replace(" ", "")
+          : updatedTime;
       } else {
-        const updatedTime = new Date(msg.updatedAt).toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-        timeString = updatedTime.includes(',') ? updatedTime.replace(',', '') : updatedTime;
+        const updatedTime = new Date(msg.updatedAt).toLocaleString([], {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        timeString = updatedTime.includes(",")
+          ? updatedTime.replace(",", "")
+          : updatedTime;
       }
 
       return {
@@ -519,22 +534,56 @@ const getAllMessages = async(req,res)=>{
   } catch (e) {
     console.log(e.message);
   }
-}
+};
 
-const senderDetails = async(req,res)=>{
+const senderDetails = async (req, res) => {
   try {
-    const {senderId}=req.query
-    const senderDetails= await  Organizer.findOne({_id:senderId})
-    res.json({senderDetails})
+    const { senderId } = req.query;
+    const senderDetails = await Organizer.findOne({ _id: senderId });
+    res.json({ senderDetails });
+  } catch (error) {}
+};
+
+const submitReview = async (req, res) => {
+  try {
+
+    const { details, eventId } = req.body;
+    console.log(details,99);
+    const newReview = {
+      reviewerName: details.reviewerName,
+      rating: details.rating,
+      comment: details.comment,
+      date: new Date(),
+    };
+
+    await Event.findByIdAndUpdate(
+      eventId,
+      { $push: { reviews: newReview } },
+      { new: true }
+    ).then(() => {
+     
+      return res.json({success:true})
+
+      }) .catch((err) => {
+        console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+        console.log(err);
+      });
   } catch (error) {
-    
+
   }
-}
+};
 
+const allReview = async (req, res) => {
+  try {
+    const { eventId } = req.query;
 
+    console.log(eventId, 88);
 
-
-
+    const reviews = await Event.findOne({ _id: eventId }, { reviews: 1 }).populate("reviewerName")
+    console.log(reviews, 87);
+    res.json({reviews})
+  } catch (error) {}
+};
 
 module.exports = {
   registerUser,
@@ -561,5 +610,7 @@ module.exports = {
   allEvents,
   addMessage,
   getAllMessages,
-  senderDetails
+  senderDetails,
+  submitReview,
+  allReview,
 };
