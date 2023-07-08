@@ -8,10 +8,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const fs = require("fs");
-const path= require('path');
-
-
-
+const path = require("path");
+const { log } = require("console");
 
 const organizer_register = async (req, res) => {
   try {
@@ -121,26 +119,25 @@ const organizer_login = async (req, res) => {
 const addEvent = (req, res) => {
   try {
     console.log("reached addEvent ");
+    console.log(req.body);
 
-    const event = JSON.parse(req.body.event);
-    console.log(event);
-    event.image = req.files.image[0].filename;
-
-    event.coverImage = req.files.coverImage[0].filename;
-
+    const event = req.body.eventDetails;
+    const image = req.body.image;
+    const coverImage = req.body.coverImage;
+  
     const location = {
       street: event.street,
       city: event.city,
       state: event.state,
       country: event.country,
     };
-    console.log(event);
+    event.image = image;
+    event.coverImage = coverImage;
     event.location = location;
     event.addedOn = new Date();
     const newEvent = Event(event);
     newEvent.save();
 
-    console.log("hello");
 
     res.status(200).json({ success: true });
   } catch (error) {
@@ -178,16 +175,13 @@ const updateProfile = async (req, res) => {
 
 const organizerCoverImageUpload = async (req, res) => {
   try {
-    console.log("helelele");
-    const id = JSON.parse(req.body.id);
-
-    const newImage = req.file.filename;
-    const updated = await Organizer.updateOne(
-      { _id: id },
-      { $set: { coverImage: newImage } }
+    const { coverImage, organizerId } = req.body;
+    const upload = await Organizer.updateOne(
+      { _id: organizerId },
+      { $set: { coverImage: coverImage } }
     );
-    const organizer = await Organizer.findOne({ _id: id });
-    res.status(200).json({ organizer, success: true });
+    const organizer = await Organizer.findOne({ _id: organizerId });
+    res.status(200).json({ success: true, organizer });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -196,15 +190,14 @@ const organizerCoverImageUpload = async (req, res) => {
 
 const organizerImageUpdate = async (req, res) => {
   try {
-    const id = JSON.parse(req.body.id);
-
-    const newImage = req.file.filename;
-    const updated = await Organizer.updateOne(
-      { _id: id },
-      { $set: { image: newImage } }
+    console.log("backenddddddddddddddddd");
+    const { image, organizerId } = req.body;
+    const upload = await Organizer.updateOne(
+      { _id: organizerId },
+      { $set: { image: image } }
     );
-    const organizer = await Organizer.findOne({ _id: id });
-    res.status(200).json({ organizer, success: true });
+    const organizer = await Organizer.findOne({ _id: organizerId });
+    res.status(200).json({ success: true, organizer });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -273,9 +266,6 @@ const eventDetails = async (req, res) => {
     const country = details.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
 
-   
- 
-
     res.json({ details, success: true, placeName });
   } catch (error) {
     console.log(error.message);
@@ -339,53 +329,35 @@ const getAllContacts = async (req, res) => {
   } catch (error) {}
 };
 
-
-
-const editEvent= async(req,res)=>{
+const conformEventEdit = async (req, res) => {
   try {
-    console.log("hellooooooooo");
-    const details=JSON.parse(req.body.event);
+    console.log(req.body);
+    const image = req.body.image;
+    const coverImage = req.body.coverImage;
+    const details = req.body.event;
 
-    console.log(details,999);
-
-     
-    
-    
-    fs.unlink(path.join(__dirname,"../../server/public/image",details.image),(error)=>{
-      if(error){
-        console.log(error);
-      }else{
-        console.log("image unlinked");
+    await Event.updateOne(
+      { _id: details._id },
+      {
+        $set: {
+          eventName: details.eventName,
+          about: details.about,
+          description: details.description,
+          ticketPrice: details.ticketPrice,
+          ticketQuantity: details.ticketQuantity,
+          startDate: details.startDate,
+          endDate: details.endDate,
+          endTime: details.endDate,
+          startTime: details.startTime,
+          image: image,
+          coverImage: coverImage,
+        },
       }
-    })
-    
-    fs.unlink(path.join(__dirname,"../../server/public/coverImage",details.coverImage),(error)=>{
-      if(error){
-        console.log(error);
-      }else{
-        console.log("cover unlinked");
-      }
-    })
+    );
 
-    await Event.updateOne({_id:details._id},{$set:{
-        eventName:details.eventName,
-        about:details.about,
-        description:details.description,
-        ticketPrice:details.ticketPrice,
-        ticketQuantity:details.ticketQuantity,
-        startDate:details.startDate,
-        endDate:details.endDate,
-        endTime:details.endDate,
-        startTime:details.startTime,
-        image:details.image,
-        coverImage:details.coverImage,
-
-    }})
-
-  } catch (error) {
-    
-  }
-}
+    res.status(200).json({ success: true });
+  } catch (error) {}
+};
 
 module.exports = {
   organizer_register,
@@ -401,5 +373,5 @@ module.exports = {
   chartdetails,
   tableDetails,
   getAllContacts,
-  editEvent
+  conformEventEdit,
 };

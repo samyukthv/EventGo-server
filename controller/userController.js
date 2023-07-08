@@ -221,15 +221,10 @@ const updateProfile = async (req, res) => {
 
 const userImageUpdate = async (req, res) => {
   try {
-    const id = JSON.parse(req.body.id);
-
-    const newImage = req.file.filename;
-    const updated = await User.updateOne(
-      { _id: id },
-      { $set: { image: newImage } }
-    );
-    const user = await User.findOne({ _id: id });
-    res.status(200).json({ user, success: true });
+  const {image,userId}=req.body
+  const upload= await  User.updateOne({_id:userId},{$set:{image:image}})
+  const user= await User.findOne({_id:userId})
+  res.status(200).json({success:true,user})
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -565,7 +560,6 @@ const submitReview = async (req, res) => {
       return res.json({success:true})
 
       }) .catch((err) => {
-        console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
         console.log(err);
       });
   } catch (error) {

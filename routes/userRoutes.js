@@ -16,7 +16,7 @@ router_user.post('/resetPass',userController.resetPassword)
 router_user.post("/setNewPassword/:id",userController.resetPassword)
 router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
 router_user.patch('/updateProfile', userController.updateProfile)
-router_user.patch("/userImageUpdate",upload.single('profileImage'),userController.userImageUpdate)
+router_user.patch("/saveImage",userController.userImageUpdate)
 
 router_user.get("/eventDetails/:id",userController.eventDetails)
 router_user.get('/organizerDetails/:id',userController.organizerDetails)
