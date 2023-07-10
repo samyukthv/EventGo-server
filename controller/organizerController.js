@@ -9,7 +9,8 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
-const { log } = require("console");
+const sendEmail = require("../utils/sendMail");
+const booking = require("../model/booking");
 
 const organizer_register = async (req, res) => {
   try {
@@ -217,19 +218,21 @@ const organizerEvents = async (req, res) => {
 
 const organizerAddPost = async (req, res) => {
   try {
-    console.log("organizerPost reached");
-    const value = JSON.parse(req.body.value);
-    const id = JSON.parse(req.body.id);
-    const newImage = req.file.filename;
+   console.log(req.body);
+
+    // console.log("organizerPost reached");
+    // const value = JSON.parse(req.body.value);
+    // const id = JSON.parse(req.body.id);
+    // const newImage = req.file.filename;
 
     await Organizer.updateOne(
-      { _id: id },
+      { _id: req.body.organizerId },
       {
         $push: {
           post: {
-            title: value.title,
-            description: value.description,
-            image: newImage,
+            title:req.body.details.title ,
+            description:req.body.details.description ,
+            image:req.body.image,
           },
         },
       }
@@ -354,6 +357,18 @@ const conformEventEdit = async (req, res) => {
         },
       }
     );
+
+    const bookedUsers = await Booking.find({ event: details._id });
+    console.log(bookedUsers, "usersssssssssssssssssssssssssssssss");
+    const bookingEmails = bookedUsers.map((booking) => booking.bookingEmail);
+    console.log(bookingEmails);
+
+    for (const booking of bookedUsers) {
+      const { bookingEmail, userFirstName } = booking;
+      const emailMessage = `Dear ${userFirstName},\n\nWe apologize for any inconvenience caused. The event details have been changed, and here are the new details:\n\nEvent Name: ${details.eventName}\nAbout: ${details.about}\nDescription: ${details.description}\nTicket Price: ${details.ticketPrice}\nTicket Quantity: ${details.ticketQuantity}\nStart Date: ${details.startDate}\nEnd Date: ${details.endDate}\nStart Time: ${details.startTime}\nEnd Time: ${details.endTime}\n\nThank you for your understanding.\n\nBest Regards,\nThe EventGo Team`;
+
+      await sendEmail(bookingEmail, "Information regarding your event", emailMessage);
+    }
 
     res.status(200).json({ success: true });
   } catch (error) {}
