@@ -10,7 +10,6 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 const sendEmail = require("../utils/sendMail");
-const booking = require("../model/booking");
 
 const organizer_register = async (req, res) => {
   try {

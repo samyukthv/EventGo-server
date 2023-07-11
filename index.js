@@ -5,8 +5,8 @@ const dotenv= require("dotenv").config()
 const connectToDatabase = require("./database/connection")
 const userRoutes=require('./routes/userRoutes')
 const organizerRoutes=require("./routes/organizerRoutes")
+const adminRoutes= require("./routes/adminRoutes")
 const socket= require("socket.io")
-const { on } = require("./model/userModel")
 
 
 
@@ -28,7 +28,7 @@ app.use('/public', express.static('public'));
 
 app.use('/',userRoutes)
 app.use('/organizer',organizerRoutes)
-
+app.use('/admin',adminRoutes)
 
 connectToDatabase()
 

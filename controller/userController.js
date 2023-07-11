@@ -439,7 +439,6 @@ const personalChoice = async (req, res) => {
       eventOrganizer: { $in: organizers },
     }).limit(4);
 
-    console.log(personal);
     res.json({ personal });
   } catch (error) {
     console.log("Error:", error);
@@ -449,7 +448,6 @@ const personalChoice = async (req, res) => {
 
 const allEvents = async (req, res) => {
   try {
-    console.log("hyy");
     const events = await Event.find({});
     const city = await Event.distinct("location.city");
     res.json({ events, city });
