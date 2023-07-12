@@ -373,6 +373,21 @@ const conformEventEdit = async (req, res) => {
   } catch (error) {}
 };
 
+
+
+const deletePost= async(req,res)=>{
+  try {
+    const {postId,organizerId}= req.query
+    console.log(organizerId,789);
+    await Organizer.updateOne({_id:organizerId},{ $pull: { post: { _id: postId } } });
+      console.log("hy");
+      res.json({success:true})
+  } catch (error) {
+    
+  }
+}
+
+
 module.exports = {
   organizer_register,
   organizer_login,
@@ -388,4 +403,5 @@ module.exports = {
   tableDetails,
   getAllContacts,
   conformEventEdit,
+  deletePost
 };

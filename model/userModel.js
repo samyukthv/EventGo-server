@@ -28,7 +28,11 @@ const userSchema= new mongoose.Schema({
     following: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Organizer'
-    }]
+    }],
+    isBlocked:{
+      type:Boolean,
+      default:false
+    }
  
 })
 

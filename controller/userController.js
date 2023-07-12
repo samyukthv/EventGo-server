@@ -81,24 +81,28 @@ const loginUser = async (req, res) => {
     let user = await User.findOne({ email: userDetails.email });
 
     if (user) {
-      bcrypt.compare(userDetails.password, user.password).then((data) => {
-        if (data) {
-          const token = jwt.sign(
-            { id: user._id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: "24hr" }
-          );
-          console.log(token, 234567);
-          res.status(200).json({
-            login: true,
-            token,
-            user,
-            message: "logged in successfully",
-          });
-        } else {
-          res.status(200).json({ login: false, message: "invalid password" });
-        }
-      });
+      if (user.isBlocked === true) {
+        res.json({ blocked: true });
+      } else {
+        bcrypt.compare(userDetails.password, user.password).then((data) => {
+          if (data) {
+            const token = jwt.sign(
+              { id: user._id, email: user.email },
+              process.env.JWT_SECRET,
+              { expiresIn: "24hr" }
+            );
+            console.log(token, 234567);
+            res.status(200).json({
+              login: true,
+              token,
+              user,
+              message: "logged in successfully",
+            });
+          } else {
+            res.status(200).json({ login: false, message: "invalid password" });
+          }
+        });
+      }
     } else {
       res.status(200).json({ login: false, message: "invalid Email" });
     }
@@ -221,10 +225,13 @@ const updateProfile = async (req, res) => {
 
 const userImageUpdate = async (req, res) => {
   try {
-  const {image,userId}=req.body
-  const upload= await  User.updateOne({_id:userId},{$set:{image:image}})
-  const user= await User.findOne({_id:userId})
-  res.status(200).json({success:true,user})
+    const { image, userId } = req.body;
+    const upload = await User.updateOne(
+      { _id: userId },
+      { $set: { image: image } }
+    );
+    const user = await User.findOne({ _id: userId });
+    res.status(200).json({ success: true, user });
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -234,9 +241,9 @@ const userImageUpdate = async (req, res) => {
 const eventDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const eventDetails = await Event.findOne({ _id: id }).populate(
-      "eventOrganizer"
-    ).populate("reviews.reviewerName");
+    const eventDetails = await Event.findOne({ _id: id })
+      .populate("eventOrganizer")
+      .populate("reviews.reviewerName");
 
     const street = eventDetails?.location[0].street;
     const city = eventDetails.location[0].city;
@@ -430,11 +437,9 @@ const organizerPosts = async (req, res) => {
 
 const personalChoice = async (req, res) => {
   try {
-    console.log("hyrrrrrrr");
     const { userId } = req.query;
     const user = await User.findOne({ _id: userId }).populate("following");
     const organizers = user.following;
-    console.log(organizers, 9999);
     const personal = await Event.find({
       eventOrganizer: { $in: organizers },
     }).limit(4);
@@ -539,9 +544,8 @@ const senderDetails = async (req, res) => {
 
 const submitReview = async (req, res) => {
   try {
-
     const { details, eventId } = req.body;
-    console.log(details,99);
+    console.log(details, 99);
     const newReview = {
       reviewerName: details.reviewerName,
       rating: details.rating,
@@ -553,16 +557,14 @@ const submitReview = async (req, res) => {
       eventId,
       { $push: { reviews: newReview } },
       { new: true }
-    ).then(() => {
-     
-      return res.json({success:true})
-
-      }) .catch((err) => {
+    )
+      .then(() => {
+        return res.json({ success: true });
+      })
+      .catch((err) => {
         console.log(err);
       });
-  } catch (error) {
-
-  }
+  } catch (error) {}
 };
 
 const allReview = async (req, res) => {
@@ -571,11 +573,61 @@ const allReview = async (req, res) => {
 
     console.log(eventId, 88);
 
-    const reviews = await Event.findOne({ _id: eventId }, { reviews: 1 }).populate("reviewerName")
+    const reviews = await Event.findOne(
+      { _id: eventId },
+      { reviews: 1 }
+    ).populate("reviewerName");
     console.log(reviews, 87);
-    res.json({reviews})
+    res.json({ reviews });
   } catch (error) {}
 };
+
+const getPosts = async (req, res) => {
+  try {
+    const posts = await Organizer.aggregate([
+      { $unwind: "$post" }, // Unwind the 'post' array field
+      {
+        $lookup: {
+          from: "organizers",
+          localField: "_id",
+          foreignField: "_id",
+          as: "organizer",
+        },
+      },
+      { $unwind: "$organizer" }, // Unwind the 'organizer' array field
+      {
+        $project: {
+          _id: 0,
+          "organizer._id": 1,
+
+          "organizer.firstName": 1,
+
+          "organizer.image": 1,
+
+          "post.title": 1,
+          "post.description": 1,
+          "post.image": 1,
+        },
+      },
+    ]);
+    console.log(posts,7890);
+    res.json({ posts });
+  } catch (error) {
+
+  }
+};
+
+
+
+const getUserProfileDetails= async(req,res)=>{
+  try {
+    const {userId}=req.query
+   const user= await User.findOne({_id:userId})
+    res.json({user})
+  } catch (error) {
+    
+  }
+}
 
 module.exports = {
   registerUser,
@@ -605,4 +657,6 @@ module.exports = {
   senderDetails,
   submitReview,
   allReview,
+  getPosts,
+  getUserProfileDetails
 };

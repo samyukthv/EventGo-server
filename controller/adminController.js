@@ -101,6 +101,26 @@ const editBanner= async(req,res)=>{
 }
 
 
+const userBlock= async(req,res)=>{
+  try {
+    const {userId}= req.body
+    await User.updateOne({_id:userId},{$set:{isBlocked:true}})
+    res.json({blocked:true})
+  } catch (error) {
+    
+  }
+}
+
+const userUnblock= async(req,res)=>{
+  try {
+    const {userId}= req.body
+    await User.updateOne({_id:userId},{$set:{isBlocked:false}})
+    res.json({unblock:true})
+  } catch (error) {
+    
+  }
+}
+
 
 module.exports={
     adminLogin,
@@ -110,7 +130,9 @@ module.exports={
     addBanner,
     bannerOne,
     getBanner,
-    editBanner
+    editBanner,
+    userBlock,
+    userUnblock,
 }
 
 

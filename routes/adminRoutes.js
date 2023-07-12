@@ -9,7 +9,8 @@ router_admin.post("/banner",adminController.addBanner)
 router_admin.get("/bannerOne",adminController.bannerOne)
 router_admin.get("/getBanner",adminController.getBanner)
 router_admin.patch("/editBanner",adminController.editBanner)
-
+router_admin.patch("/userBlock",adminController.userBlock)
+router_admin.patch("/userUnblock",adminController.userUnblock)
 
 
 

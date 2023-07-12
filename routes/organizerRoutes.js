@@ -15,6 +15,7 @@ router_organizer.post('/login',organizerController.organizer_login)
 router_organizer.post('/add-event', organizerController.addEvent)
 router_organizer.post('/updateProfile', organizerController.updateProfile)
 router_organizer.post("/organizerAddPost",upload.single('postImage'),organizerController.organizerAddPost)
+router_organizer.delete("/postDelete",organizerController.deletePost)
 
 router_organizer.patch("/saveImage",organizerController.organizerImageUpdate)
 router_organizer.patch("/saveCoverImage",organizerController.organizerCoverImageUpload)
@@ -35,4 +36,5 @@ router_organizer.post("/addMessage",userController.addMessage)
 
 
 router_organizer.patch("/editEvent",organizerController.conformEventEdit)
+
 module.exports=router_organizer;
