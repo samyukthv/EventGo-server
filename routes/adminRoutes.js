@@ -11,6 +11,8 @@ router_admin.get("/getBanner",adminController.getBanner)
 router_admin.patch("/editBanner",adminController.editBanner)
 router_admin.patch("/userBlock",adminController.userBlock)
 router_admin.patch("/userUnblock",adminController.userUnblock)
+router_admin.patch("/organizerBlock",adminController.organizerBlock)
+router_admin.patch("/organizerUnblock",adminController.organizerUnblock)
 
 
 

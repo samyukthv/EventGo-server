@@ -78,35 +78,42 @@ const organizer_register = async (req, res) => {
 
 const organizer_login = async (req, res) => {
   try {
-    console.log("loginnnnnn");
     const organizerDetails = req.body;
     console.log(organizerDetails);
 
     let organizer = await Organizer.findOne({ email: organizerDetails.email });
 
     if (organizer) {
-      bcrypt
-        .compare(organizerDetails.password, organizer.password)
-        .then((data) => {
-          if (data) {
-            console.log("one");
-            console.log("compareddd");
-            const token = jwt.sign(
-              { id: organizer._id, email: organizer.email },
-              process.env.JWT_SECRET,
-              { expiresIn: "24hr" }
-            );
-            console.log(token, 212121);
-            res.status(200).json({
-              login: true,
-              token,
-              organizer,
-              message: "logged in successfully",
-            });
-          } else {
-            res.status(200).json({ login: false, message: "invalid password" });
-          }
-        });
+    
+      if(organizer.isBlocked===true){
+        res.json({ blocked: true });
+      }else{
+
+
+        bcrypt
+          .compare(organizerDetails.password, organizer.password)
+          .then((data) => {
+            if (data) {
+              console.log("one");
+              console.log("compareddd");
+              const token = jwt.sign(
+                { id: organizer._id, email: organizer.email },
+                process.env.JWT_SECRET,
+                { expiresIn: "24hr" }
+              );
+              console.log(token, 212121);
+              res.status(200).json({
+                login: true,
+                token,
+                organizer,
+                message: "logged in successfully",
+              });
+            } else {
+              res.status(200).json({ login: false, message: "invalid password" });
+            }
+          });
+      }
+
     } else {
       res.status(200).json({ login: false, message: "invalid Email" });
     }

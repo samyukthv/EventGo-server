@@ -6,6 +6,7 @@ const Organizer= require("../model/organizerModel")
 const Banner= require("../model/banner")
 
 const jwt = require("jsonwebtoken");
+const user = require("../model/userModel");
 
 
 const adminLogin = async(req,res)=>{
@@ -14,11 +15,17 @@ const adminLogin = async(req,res)=>{
         
       let admin = await Admin.findOne({ email:email });
       if(admin){
-        if(password==admin.password){
-          const token= jwt.sign({id:response._id,email:response.email},process.env.JWT_SECRET,{expiresIn:"24h"});
-          res.status(200).json({token,success:true})
+
+        if(admin.isBlocked===true){
+          res.json({ blocked: true });
         }else{
-            res.status(400).json({message:"invalid password"})
+
+          if(password==admin.password){
+            const token= jwt.sign({id:response._id,email:response.email},process.env.JWT_SECRET,{expiresIn:"24h"});
+            res.status(200).json({token,success:true})
+          }else{
+              res.status(400).json({message:"invalid password"})
+          }
         }
 
       }else{
@@ -120,6 +127,27 @@ const userUnblock= async(req,res)=>{
     
   }
 }
+const organizerBlock= async(req,res)=>{
+  try {
+    console.log("hello");
+    const {organizerId}= req.body
+    await Organizer.updateOne({_id:organizerId},{$set:{isBlocked:true}})
+    res.json({blocked:true})
+  } catch (error) {
+    
+  }
+}
+
+const organizerUnblock= async(req,res)=>{
+  try {
+    console.log("hello");
+    const {organizerId}= req.body
+    await Organizer.updateOne({_id:organizerId},{$set:{isBlocked:false}})
+    res.json({unblock:true})
+  } catch (error) {
+    
+  }
+}
 
 
 module.exports={
@@ -133,6 +161,8 @@ module.exports={
     editBanner,
     userBlock,
     userUnblock,
+    organizerUnblock,
+    organizerBlock
 }
 
 

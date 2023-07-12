@@ -51,7 +51,11 @@ const organizerSchema= new mongoose.Schema({
     followers:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-      }]
+      }],
+      isBlocked:{
+        type:Boolean,
+        default:false
+      }
 
 })
 

@@ -2,7 +2,7 @@ const userController=require("../controller/userController")
 const organizerController=require('../controller/organizerController')
 const express=require("express")
 const router_user=express.Router()
-const Auth =require( "../middleware/auth")
+const {Auth}= require("../middleware/auth")
 const upload = require('../middleware/multer')
 
 ////////////////////////////USER ROUTERS//////////////////////////

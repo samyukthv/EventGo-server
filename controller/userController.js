@@ -66,7 +66,6 @@ const registerUser = async (req, res) => {
       "🚀 ~ file: userController.js:23 ~ registerUser ~ error:",
       error
     );
-    console.log("brooooooooooooooooooooooooooooo");
 
     return res.status(500).json({ error });
   }
