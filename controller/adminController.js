@@ -4,9 +4,9 @@ const User= require("../model/userModel")
 const Bookings= require("../model/booking")
 const Organizer= require("../model/organizerModel")
 const Banner= require("../model/banner")
-
+const Event= require("../model/event")
 const jwt = require("jsonwebtoken");
-const user = require("../model/userModel");
+
 
 
 const adminLogin = async(req,res)=>{
@@ -150,6 +150,98 @@ const organizerUnblock= async(req,res)=>{
 }
 
 
+const allUserEvents= async(req,res)=>{
+  try {
+    const {userId}= req.query
+    console.log(userId);
+
+    const events = await Bookings.find({ user: userId }).populate('event');
+ const eventDetails = events.map((booking) => booking.event);
+console.log(eventDetails);
+    // const events= await Bookings.find({user:userId}).populate("event")
+res.json({eventDetails})
+    console.log(events);
+  } catch (error) {
+    
+  }
+}
+
+
+const adminEventDetails = async(req,res)=>{
+  try {
+    const {eventId}= req.query
+    console.log(eventId,987654);
+const eventDetails= await Event.findOne({_id:eventId})
+console.log(eventDetails);
+const street = eventDetails?.location[0].street;
+    const city = eventDetails.location[0].city;
+    const state = eventDetails.location[0].state;
+    const country = eventDetails.location[0].country;
+    const placeName = `${street}, ${city}, ${state}, ${country}`;
+
+    console.log(eventDetails,placeName);
+    res.json({eventDetails,placeName})
+
+  } catch (error) {
+    
+  }
+}
+
+const adminOrganizerEvents= async(req,res)=>{
+  try {
+    const {eventId}= req.query
+    const events= await Event.find({eventOrganizer:eventId})
+    res.json({events})
+  } catch (error) {
+    
+  }
+}
+
+
+
+const cardDetails= async(req,res)=>{
+  try {
+    const userCount= await User.find({}).count()
+    const organizerCount= await Organizer.find({}).count()
+    const eventCount= await Event.find({}).count()
+
+    const result = await Bookings.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalBillSum: { $sum: "$totalBill" }
+        }
+      }
+    ]);
+    
+    const totalBillSum = result[0]?.totalBillSum || 0;
+
+
+    const tot = await Bookings.aggregate([
+      {
+        $group: {
+          _id: { $month: "$bookedDate" },
+          totalRevenue: { $sum: "$totalBill" }
+        }
+      }
+    ]);
+    
+    const totalEventsByMonth = await Bookings.aggregate([
+      {
+        $group: {
+          _id: { $month: "$bookedDate" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({totalBillSum,eventCount,organizerCount,userCount,tot,totalEventsByMonth})
+  } catch (error) {
+    
+  }
+}
+
+
 module.exports={
     adminLogin,
     allUsers,
@@ -162,7 +254,11 @@ module.exports={
     userBlock,
     userUnblock,
     organizerUnblock,
-    organizerBlock
+    organizerBlock,
+    allUserEvents,
+    adminEventDetails,
+    adminOrganizerEvents,
+    cardDetails
 }
 
 

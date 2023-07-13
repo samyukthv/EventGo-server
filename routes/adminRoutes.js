@@ -14,8 +14,11 @@ router_admin.patch("/userUnblock",adminController.userUnblock)
 router_admin.patch("/organizerBlock",adminController.organizerBlock)
 router_admin.patch("/organizerUnblock",adminController.organizerUnblock)
 
+router_admin.get("/allUserEvents",adminController.allUserEvents )
+router_admin.get("/adminEventDetails",adminController.adminEventDetails )
+router_admin.get("/adminOrganizerEvents",adminController.adminOrganizerEvents )
 
-
+router_admin.get("/cardDetails",adminController.cardDetails)
 
 
 

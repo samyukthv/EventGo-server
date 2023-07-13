@@ -53,4 +53,6 @@ router_user.get("/allReview",userController.allReview)
 router_user.get("/listenPosts",userController.getPosts)
 router_user.get("/getUserProfileDetails",Auth,userController.getUserProfileDetails)
 
+router_user.get("/myEvents",Auth,userController.myEvents)
+
 module.exports=router_user;

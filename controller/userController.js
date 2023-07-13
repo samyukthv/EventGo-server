@@ -10,8 +10,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2022-08-01",
 });
 
-const { ObjectId } = require("mongodb");
-const booking = require("../model/booking");
 
 // user register
 
@@ -219,7 +217,10 @@ const updateProfile = async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     console.log(user);
     res.status(200).json({ updated: true, user });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
 };
 
 const userImageUpdate = async (req, res) => {
@@ -563,7 +564,10 @@ const submitReview = async (req, res) => {
       .catch((err) => {
         console.log(err);
       });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
 };
 
 const allReview = async (req, res) => {
@@ -612,7 +616,8 @@ const getPosts = async (req, res) => {
     console.log(posts,7890);
     res.json({ posts });
   } catch (error) {
-
+    console.log(error.message);
+    return res.status(500).json({ error });
   }
 };
 
@@ -624,9 +629,36 @@ const getUserProfileDetails= async(req,res)=>{
    const user= await User.findOne({_id:userId})
     res.json({user})
   } catch (error) {
-    
+    console.log(error.message);
+    return res.status(500).json({ error });
   }
 }
+
+
+const myEvents= async(req,res)=>{
+  try {
+    const {userId}=req.query
+    console.log(userId);
+    const today = new Date();
+    const bookings = await Booking.find({ user: userId })
+    .populate('event')
+    const pastEvents = bookings
+      .filter((booking) => booking.event.startDate < today)
+      .map((booking) => booking.event);
+
+const futureEvents=bookings
+.filter((booking) => booking.event.startDate > today)
+.map((booking) => booking.event);
+
+      console.log(futureEvents,"future events");
+      console.log(pastEvents);
+res.json({futureEvents,pastEvents})
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
+}
+
 
 module.exports = {
   registerUser,
@@ -657,5 +689,6 @@ module.exports = {
   submitReview,
   allReview,
   getPosts,
-  getUserProfileDetails
+  getUserProfileDetails,
+  myEvents
 };
