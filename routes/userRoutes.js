@@ -18,7 +18,7 @@ router_user.get('/getOrganizerDetails',userController.getOrganizerDetails)
 router_user.patch('/updateProfile',Auth, userController.updateProfile)
 router_user.patch("/saveImage",userController.userImageUpdate)
 
-router_user.get("/eventDetails/:id",userController.eventDetails)
+router_user.get("/eventDetails/:id",Auth,userController.eventDetails)
 router_user.get('/organizerDetails/:id',userController.organizerDetails)
 
 
