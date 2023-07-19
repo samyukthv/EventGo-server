@@ -6,8 +6,8 @@ const connectToDatabase = require("./database/connection")
 const userRoutes=require('./routes/userRoutes')
 const organizerRoutes=require("./routes/organizerRoutes")
 const adminRoutes= require("./routes/adminRoutes")
-const socket= require("socket.io")
-
+const socketConnection= require("./utils/socketio")
+const socketUtils = require("./utils/socketio")
 
 
 
@@ -38,29 +38,6 @@ const server=app.listen(PORT,()=>{
     console.log(`server is runnig at PORT ${PORT}`);
 });
 
+socketUtils.initialize(server)
 
-const io= socket(server,{
-    cors: {
-        origin:["http://localhost:5173"],
-        credentials: true,
-      },
-})
-
-global.onlineUsers =new Map()
-io.on("connection",(socket)=>{
-    global.chatSocket=socket;
-    socket.on("add-user",(userId)=>{
-        onlineUsers.set(userId,socket.id);
-        console.log(onlineUsers,"online users");
-    });
-
-    socket.on("send-msg",(data)=>{
-        console.log(data,"send-message data");
-        const sendUserSocket=onlineUsers.get(data.to);
-        console.log(sendUserSocket,"user socket");
-        if(sendUserSocket){
-           console.log("user socket true");
-            socket.to(sendUserSocket).emit("msg-receive",data.msg)
-        }
-    })
-})
+const io= socketUtils.getIO()

@@ -10,7 +10,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2022-08-01",
 });
 
-
 // user register
 
 const registerUser = async (req, res) => {
@@ -33,12 +32,11 @@ const registerUser = async (req, res) => {
         mobile: req.body.mobile,
       }).then((response) => {
         const token = jwt.sign(
-          { id: response._id, email: response.email },
+          { id: response._id, email: response.email, role: "user" },
           process.env.JWT_SECRET,
           { expiresIn: "24hr" }
         );
 
-        console.log("yyeyye");
         res.status(200).json({
           userData: response,
           message: "registered successfully..!",
@@ -84,11 +82,10 @@ const loginUser = async (req, res) => {
         bcrypt.compare(userDetails.password, user.password).then((data) => {
           if (data) {
             const token = jwt.sign(
-              { id: user._id, email: user.email },
+              { id: user._id, email: user.email, role: "user" },
               process.env.JWT_SECRET,
               { expiresIn: "24hr" }
             );
-            console.log(token, 234567);
             res.status(200).json({
               login: true,
               token,
@@ -104,6 +101,7 @@ const loginUser = async (req, res) => {
       res.status(200).json({ login: false, message: "invalid Email" });
     }
   } catch (error) {
+    console.log("nkm");
     console.log(error.message);
     return res.status(500).json({ error });
   }
@@ -281,7 +279,8 @@ const config = async (req, res) => {
       publishableKey: publishableKey,
     });
   } catch (error) {
-    console.log(message.error);
+    console.log(error.message);
+    return res.status(500).json({ error });
   }
 };
 
@@ -351,7 +350,10 @@ const getBillingDetails = async (req, res) => {
     const country = latestBooking?.event.location[0].country;
     const placeName = `${street}, ${city}, ${state}, ${country}`;
     res.json({ latestBooking, success: true, placeName });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
 };
 
 // to check if the user is following the organizer
@@ -440,8 +442,10 @@ const personalChoice = async (req, res) => {
     const { userId } = req.query;
     const user = await User.findOne({ _id: userId }).populate("following");
     const organizers = user.following;
+    const today = new Date();
     const personal = await Event.find({
       eventOrganizer: { $in: organizers },
+      startDate: { $gt: today },
     }).limit(4);
 
     res.json({ personal });
@@ -530,7 +534,8 @@ const getAllMessages = async (req, res) => {
 
     res.status(200).json({ messages: formattedMessages });
   } catch (e) {
-    console.log(e.message);
+    console.log(error.message);
+    return res.status(500).json({ error });
   }
 };
 
@@ -539,13 +544,15 @@ const senderDetails = async (req, res) => {
     const { senderId } = req.query;
     const senderDetails = await Organizer.findOne({ _id: senderId });
     res.json({ senderDetails });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
 };
 
 const submitReview = async (req, res) => {
   try {
     const { details, eventId } = req.body;
-    console.log(details, 99);
     const newReview = {
       reviewerName: details.reviewerName,
       rating: details.rating,
@@ -574,15 +581,16 @@ const allReview = async (req, res) => {
   try {
     const { eventId } = req.query;
 
-    console.log(eventId, 88);
 
     const reviews = await Event.findOne(
       { _id: eventId },
       { reviews: 1 }
     ).populate("reviewerName");
-    console.log(reviews, 87);
     res.json({ reviews });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ error });
+  }
 };
 
 const getPosts = async (req, res) => {
@@ -613,7 +621,6 @@ const getPosts = async (req, res) => {
         },
       },
     ]);
-    console.log(posts,7890);
     res.json({ posts });
   } catch (error) {
     console.log(error.message);
@@ -621,44 +628,36 @@ const getPosts = async (req, res) => {
   }
 };
 
-
-
-const getUserProfileDetails= async(req,res)=>{
+const getUserProfileDetails = async (req, res) => {
   try {
-    const {userId}=req.query
-   const user= await User.findOne({_id:userId})
-    res.json({user})
+    const { userId } = req.query;
+    const user = await User.findOne({ _id: userId });
+    res.json({ user });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
   }
-}
+};
 
-
-const myEvents= async(req,res)=>{
+const myEvents = async (req, res) => {
   try {
-    const {userId}=req.query
-    console.log(userId);
+    const { userId } = req.query;
     const today = new Date();
-    const bookings = await Booking.find({ user: userId })
-    .populate('event')
+    const bookings = await Booking.find({ user: userId }).populate("event");
     const pastEvents = bookings
       .filter((booking) => booking.event.startDate < today)
       .map((booking) => booking.event);
 
-const futureEvents=bookings
-.filter((booking) => booking.event.startDate > today)
-.map((booking) => booking.event);
+    const futureEvents = bookings
+      .filter((booking) => booking.event.startDate > today)
+      .map((booking) => booking.event);
 
-      console.log(futureEvents,"future events");
-      console.log(pastEvents);
-res.json({futureEvents,pastEvents})
+    res.json({ futureEvents, pastEvents });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ error });
   }
-}
-
+};
 
 module.exports = {
   registerUser,
@@ -690,5 +689,5 @@ module.exports = {
   allReview,
   getPosts,
   getUserProfileDetails,
-  myEvents
+  myEvents,
 };

@@ -37,7 +37,7 @@ const organizer_register = async (req, res) => {
         mobile: req.body.mobile,
       }).then((response) => {
         const token = jwt.sign(
-          { id: response._id, email: response.email },
+          { id: response._id, email: response.email,role:"organizer" },
           process.env.JWT_SECRET,
           { expiresIn: "24hr" }
         );
@@ -97,7 +97,7 @@ const organizer_login = async (req, res) => {
               console.log("one");
               console.log("compareddd");
               const token = jwt.sign(
-                { id: organizer._id, email: organizer.email },
+                { id: organizer._id, email: organizer.email ,role:"organizer"},
                 process.env.JWT_SECRET,
                 { expiresIn: "24hr" }
               );

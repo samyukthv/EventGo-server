@@ -21,7 +21,7 @@ const adminLogin = async(req,res)=>{
         }else{
 
           if(password==admin.password){
-            const token= jwt.sign({id:response._id,email:response.email},process.env.JWT_SECRET,{expiresIn:"24h"});
+            const token= jwt.sign({id:response._id,email:response.email,role:"admin"},process.env.JWT_SECRET,{expiresIn:"24h"});
             res.status(200).json({token,success:true})
           }else{
               res.status(400).json({message:"invalid password"})

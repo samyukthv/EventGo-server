@@ -29,7 +29,7 @@ module.exports = {
                     });
                 } else {
                     User.findById(decode.id).then((data)=>{
-                        if(!data.isBlocked){
+                        if(!data.isBlocked  && decode.role==="user"){
                             req.headers.userId= decode.id
                             console.log("authenticated user");
                             next()
@@ -72,7 +72,7 @@ module.exports = {
                     });
                 } else {
                     Organizer.findById(decode.id).then((data)=>{
-                        if(!data.isBlocked){
+                        if(!data.isBlocked && decode.role==="organizer"){
                             req.headers.organizerId= decode.id
                             console.log("authenticated organizer");
                             next()

@@ -22,8 +22,8 @@ router_user.get("/eventDetails/:id",userController.eventDetails)
 router_user.get('/organizerDetails/:id',userController.organizerDetails)
 
 
-router_user.get("/config",Auth, userController.config); 
-router_user.post("/create-payment-intent",Auth,userController.createPayment);
+router_user.get("/config", userController.config); 
+router_user.post("/create-payment-intent",userController.createPayment);
 
 
 router_user.post('/confirmBooking',Auth,Auth,userController.confirmBooking)
