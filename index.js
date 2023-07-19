@@ -32,6 +32,9 @@ app.use('/admin',adminRoutes)
 
 connectToDatabase()
 
+
+
+
 const PORT= process.env.PORT||4000
 
 const server=app.listen(PORT,()=>{
