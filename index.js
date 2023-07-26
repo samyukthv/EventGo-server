@@ -14,7 +14,7 @@ const socketUtils = require("./utils/socketio")
 const app= express()
 
 app.use(cors({
-    origin:["https://main.d3crfbmtohnqjn.amplifyapp.com"],
+    origin:["http://localhost:5173"],
     methods:["GET","POST","PATCH","DELETE"],
     credentials:true,
 

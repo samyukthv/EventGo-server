@@ -197,7 +197,6 @@ const organizerCoverImageUpload = async (req, res) => {
 
 const organizerImageUpdate = async (req, res) => {
   try {
-    console.log("backenddddddddddddddddd");
     const { image, organizerId } = req.body;
     const upload = await Organizer.updateOne(
       { _id: organizerId },
@@ -266,7 +265,6 @@ const organizerPosts = async (req, res) => {
 
 const eventDetails = async (req, res) => {
   try {
-    console.log("helloooo");
     const { eventId } = req.query;
     const details = await Event.findById({ _id: eventId });
     const street = details?.location[0].street;
@@ -310,11 +308,9 @@ const chartdetails = async (req, res) => {
 const tableDetails = async (req, res) => {
   try {
     const { eventId } = req.query;
-    console.log(eventId);
     const event = await Event.findOne({ _id: eventId });
 
     const userDetails = await Booking.find({ event: eventId }).populate("user");
-    console.log(userDetails);
     res.json({ userDetails });
   } catch (error) {
     console.log(error.message);
@@ -365,9 +361,7 @@ const conformEventEdit = async (req, res) => {
     );
 
     const bookedUsers = await Booking.find({ event: details._id });
-    console.log(bookedUsers, "usersssssssssssssssssssssssssssssss");
     const bookingEmails = bookedUsers.map((booking) => booking.bookingEmail);
-    console.log(bookingEmails);
 
     for (const booking of bookedUsers) {
       const { bookingEmail, userFirstName } = booking;

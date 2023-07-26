@@ -111,7 +111,7 @@ const loginUser = async (req, res) => {
 
 const listEvent = async (req, res) => {
   try {
-    const events = await Event.find({}).limit(4);
+    const events = await Event.find({}).sort({ addedOn: -1 }).limit(4);
     res.json({ success: true, events });
   } catch (error) {
     console.log(error.message);
@@ -141,7 +141,7 @@ const sendMail = async (req, res) => {
       res.status(200).json({ status: false, message: "email dose not exist" });
     }
 
-    const url = `http://localhost:5173/reset-password/${user._id}`;
+    const url = `https://main.d3crfbmtohnqjn.amplifyapp.com/reset-password/${user._id}`;
     await sendEmail(email, "change password link", url);
     res.status(200).json({
       status: true,
@@ -149,7 +149,6 @@ const sendMail = async (req, res) => {
       verify: true,
     });
   } catch (error) {
-    console.log("error");
     console.log(error.message);
     return res.status(500).json({ error });
   }
@@ -159,7 +158,6 @@ const resetPassword = async (req, res) => {
   try {
     const userId = req.params.id;
     let password = req.body.password;
-    console.log(password);
     const user = await User.findOne({ _id: userId });
     if (user) {
       const passwordMatch = await bcrypt.compare(password, user.password);
@@ -213,7 +211,6 @@ const updateProfile = async (req, res) => {
     );
 
     const user = await User.findOne({ email: req.body.email });
-    console.log(user);
     res.status(200).json({ updated: true, user });
   } catch (error) {
     console.log(error.message);
@@ -262,8 +259,10 @@ const organizerDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const organizerDetails = await Organizer.findOne({ _id: id });
+    const eventCount = await Event.find({eventOrganizer: id}).count()
+    console.log(eventCount,"event coiunt");
 
-    res.status(200).json({ organizerDetails });
+    res.status(200).json({ organizerDetails ,eventCount});
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "An error occurred" });
@@ -457,7 +456,7 @@ const personalChoice = async (req, res) => {
 
 const allEvents = async (req, res) => {
   try {
-    const events = await Event.find({});
+    const events = await Event.find({}).sort({ addedOn: -1 }); // Sort events by 'addedOn' in descending order (-1)
     const city = await Event.distinct("location.city");
     res.json({ events, city });
   } catch (error) {
@@ -465,7 +464,6 @@ const allEvents = async (req, res) => {
     res.status(500).json({ message: "An error occurred" });
   }
 };
-
 /// CHAT FUNCTIONS
 
 const addMessage = async (req, res) => {
@@ -580,7 +578,6 @@ const submitReview = async (req, res) => {
 const allReview = async (req, res) => {
   try {
     const { eventId } = req.query;
-
 
     const reviews = await Event.findOne(
       { _id: eventId },

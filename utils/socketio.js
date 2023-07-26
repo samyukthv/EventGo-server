@@ -5,7 +5,7 @@ let io;
 function initialize(server) {
   io = socket(server, {
     cors: {
-      origin: ["https://main.d3crfbmtohnqjn.amplifyapp.com"],
+      origin: ["http://localhost:5173"],
       credentials: true,
     },
   });
