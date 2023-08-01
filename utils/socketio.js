@@ -15,7 +15,7 @@ function initialize(server) {
         global.chatSocket=socket;
         socket.on("add-user",(userId)=>{
             onlineUsers.set(userId,socket.id);
-            console.log(onlineUsers,"online users");
+            
         });
     
         socket.on("send-msg",(data)=>{
