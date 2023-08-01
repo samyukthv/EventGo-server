@@ -438,14 +438,17 @@ const organizerPosts = async (req, res) => {
 
 const personalChoice = async (req, res) => {
   try {
+
+
     const { userId } = req.query;
     const user = await User.findOne({ _id: userId }).populate("following");
     const organizers = user.following;
     const today = new Date();
     const personal = await Event.find({
       eventOrganizer: { $in: organizers },
-      startDate: { $gt: today },
-    }).limit(4);
+      
+    });
+
 
     res.json({ personal });
   } catch (error) {
