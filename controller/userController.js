@@ -447,7 +447,7 @@ const personalChoice = async (req, res) => {
     const personal = await Event.find({
       eventOrganizer: { $in: organizers },
       
-    });
+    }).limit(4);
 
 
     res.json({ personal });
