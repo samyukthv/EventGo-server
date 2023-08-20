@@ -27,7 +27,7 @@ app.use('/public', express.static('public'));
 
 
 app.use('/',userRoutes)
-app.use('/organizer',organizerRoutes)
+app.use('/organizer',organizerRoutes)b
 app.use('/admin',adminRoutes)
 
 connectToDatabase()

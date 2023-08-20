@@ -331,7 +331,9 @@ const getAllContacts = async (req, res) => {
         res.status(200).json({ success: true, users });
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    
+  }
 };
 
 const conformEventEdit = async (req, res) => {
